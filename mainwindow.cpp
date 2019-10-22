@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget* central) {
 }
 
 void MainWindow::initializeSettings() {
-    setWindowIcon(QIcon(":/img/images/icon.png"));
+    setWindowIcon(QIcon(":/images/icon.png"));
 
     int scale = 300;
     int width = 4 * scale;

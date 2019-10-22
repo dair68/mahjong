@@ -1,9 +1,12 @@
 <RCC>
-    <qresource prefix="/img">
-        <file>images/Mahjong Tiles.jpg</file>
-        <file>images/Nice Mahjong Tiles.jpg</file>
-        <file>images/chineseclouds-01.jpg</file>
-        <file>images/Asian Farming_EEZY_RMPL-01-1.jpg</file>
-        <file>images/icon.png</file>
+    <qresource prefix="/fonts">
+        <file>ragingredlotus-bb.regular.ttf</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>chineseclouds-01.jpg</file>
+        <file>icon.png</file>
+        <file>Asian Farming_EEZY_RMPL-01-1.jpg</file>
+        <file>Mahjong Tiles.jpg</file>
+        <file>Nice Mahjong Tiles.jpg</file>
     </qresource>
 </RCC>
