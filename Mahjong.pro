@@ -18,10 +18,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    shisensho.cpp \
     titlescreen.cpp
 
 HEADERS += \
     mainwindow.h \
+    shisensho.h \
     titlescreen.h
 
 FORMS +=

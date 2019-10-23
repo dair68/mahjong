@@ -1,10 +1,11 @@
 #include "titlescreen.h"
+#include "mainwindow.h"
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QFontDatabase>
 
-TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
+TitleScreen::TitleScreen(MainWindow* parent) : QWidget(parent) {
     setObjectName("TitleScreen");
     setStyleSheet("QWidget#TitleScreen {background-image: url(:/images/chineseclouds-01.jpg);}");
 
@@ -17,18 +18,18 @@ TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(
         "font-family: RagingRedLotus BB;"
-        "font-size: 150pt;"
+        "font-size: 130pt;"
         "font-style: italic;"
     );
     layout->addWidget(title);
-    //layout->addSpacing(80);
 
     QPushButton* shisenButton = new QPushButton("Shisen-sho",this);
+    connect(shisenButton, SIGNAL(clicked()), parent, SLOT(toShisensho()));
     shisenButton->setStyleSheet(
-        "font-size: 25pt;"
+        "font-size: 22pt;"
     );
     layout->addWidget(shisenButton);
-    layout->addSpacing(150);
+    layout->addSpacing(200);
 
     this->setLayout(layout);
 }

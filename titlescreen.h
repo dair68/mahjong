@@ -2,13 +2,14 @@
 #define TITLESCREEN_H
 
 #include <QWidget>
+#include "mainwindow.h"
 
 class TitleScreen : public QWidget
 {
 public:
     //creates title screen
     //@param parent - pointer to parent widget
-    TitleScreen(QWidget* parent=nullptr);
+    TitleScreen(MainWindow* parent=nullptr);
 };
 
 #endif // TITLESCREEN_H
