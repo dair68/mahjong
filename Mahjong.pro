@@ -19,11 +19,13 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     shisensho.cpp \
+    tile.cpp \
     titlescreen.cpp
 
 HEADERS += \
     mainwindow.h \
     shisensho.h \
+    tile.h \
     titlescreen.h
 
 FORMS +=
