@@ -4,9 +4,8 @@
     </qresource>
     <qresource prefix="/images">
         <file>chineseclouds-01.jpg</file>
-        <file>icon.png</file>
         <file>Asian Farming_EEZY_RMPL-01-1.jpg</file>
-        <file>Mahjong Tiles.jpg</file>
-        <file>Nice Mahjong Tiles.jpg</file>
+        <file>mahjong_tiles.png</file>
+        <file>MJt1-.svg.png</file>
     </qresource>
 </RCC>

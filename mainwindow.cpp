@@ -15,7 +15,8 @@ MainWindow::MainWindow(QWidget* central) {
 }
 
 void MainWindow::initializeSettings() {
-    setWindowIcon(QIcon(":/images/icon.png"));
+    QString tilePath = ":/images/MJt1-.svg.png";
+    setWindowIcon(QIcon(tilePath));
 
     int scale = 300;
     int width = 4 * scale;

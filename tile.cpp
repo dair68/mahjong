@@ -1,4 +1,8 @@
 #include "tile.h"
+#include <random>
+
+unsigned Tile::SPRITE_WIDTH = 64;
+unsigned Tile::SPRITE_HEIGHT = 78;
 
 Tile::Tile() {
     id = 0;
@@ -71,6 +75,35 @@ bool Tile::isFaceup() const {
     return faceup;
 }
 
-bool Tile::operator==(const Tile& right) {
+unsigned Tile::spriteWidth() {
+    return SPRITE_WIDTH;
+}
+
+unsigned Tile::spriteHeight() {
+    return SPRITE_HEIGHT;
+}
+
+bool Tile::operator==(const Tile& right) const {
     return id == right.id;
 }
+
+void Tile::render(QPainter& painter, const QRectF& target) const {
+    //finding sprite based on id
+    const unsigned SPRITE_SHEET_COLS = 7;
+
+    unsigned spriteSheetX = (id % SPRITE_SHEET_COLS) * SPRITE_WIDTH;
+    unsigned spriteSheetY = id / SPRITE_SHEET_COLS * SPRITE_HEIGHT;
+    QRectF source = QRectF(spriteSheetX, spriteSheetY, SPRITE_WIDTH, SPRITE_HEIGHT);
+
+    QString imagePath = ":/images/mahjong_tiles.png";
+    QImage spriteSheet = QImage(imagePath);
+
+    painter.drawImage(target, spriteSheet, source);
+}
+
+Tile randomTile() {
+    int randomId = rand() % 42;
+    return Tile(randomId);
+}
+
+
