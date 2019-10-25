@@ -10,7 +10,7 @@ public:
     Tile();
 
     //creates a tile with a certain id
-    //@param id - id number of tile. number from 0-41. tiles numbered left to right, top to bottom on tilesheet
+    //@param id - id number of tile. number from 0-42. tiles numbered left to right, top to bottom on tilesheet
     Tile(const unsigned id);
 
     //creates a tile of a certain suit and number
@@ -30,20 +30,37 @@ public:
     //checks whether tile is face up
     bool isFaceup() const;
 
+    //checks if tile has been selected
+    bool isSelected() const;
+
+    //selects tile if not already selected, deselects otherwise
+    void toggleSelection();
+
+    //checks if tile is hovered over
+    bool isHoveredOver() const;
+
+    //marks tile as hovered
+    void markHovered();
+
+    //marks tile as not hovered
+    void markNotHovered();
+
     //obtains width of tile on spritesheet
     static unsigned spriteWidth();
 
     //obtains height of tile on spritesheet
     static unsigned spriteHeight();
 
+    //returns x coordinate of tile's topleft corner on spritesheet
+    unsigned getX() const;
+
+    //returns y coordinate of tile's topleft corner on spritesheet
+    unsigned getY() const;
+
     //checks if two tiles have the same id i.e. the same suit and number
     //@param right - tile on right side of operator
     bool operator==(const Tile& right) const;
 
-    //draws a tile on a widget
-    //@param painter - QPainter object point to widget where tile will be drawn
-    //@param target - rectangle where tile will be drawn
-    void render(QPainter& painter, const QRectF& target) const;
 private:
     static unsigned SPRITE_WIDTH;
     static unsigned SPRITE_HEIGHT;
@@ -51,6 +68,8 @@ private:
     std::string suit;
     unsigned number;
     bool faceup;
+    bool selected;
+    bool hovered;
 };
 
 //generates a random tile, each tile having equal probability
