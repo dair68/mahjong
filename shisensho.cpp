@@ -4,6 +4,14 @@
 #include <math.h>
 #include <QMouseEvent>
 
+bool operator==(const struct Space& spaceLeft, const struct Space& spaceRight) {
+    return spaceLeft.col == spaceRight.col && spaceLeft.row == spaceRight.row;
+}
+
+bool operator!=(const struct Space& spaceLeft, const struct Space& spaceRight) {
+    return spaceLeft.col != spaceRight.col || spaceLeft.row != spaceRight.row;
+}
+
 Shisensho::Shisensho(MainWindow* parent) : QWidget(parent) {
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -14,7 +22,7 @@ Shisensho::Shisensho(MainWindow* parent) : QWidget(parent) {
     tilesDrawn = false;
     backgroundDrawn = false;
     updatedSpace = {-1, -1};
-    hoveredTile = nullptr;
+    hoveredSpace = {-1, -1};
 
     //setting seed for random tiles
     srand(time(NULL));
@@ -47,8 +55,13 @@ void Shisensho::paintEvent(QPaintEvent *event) {
 
     //checking if a tile needs to be repainted
     if(gridContainsSpace(updatedSpace)) {
-        redrawTile(painter, updatedSpace);
+        redrawTile(painter, updatedSpace); 
         updatedSpace = {-1, -1};
+    }
+
+    //checking if any newly hovered tiles
+    if(gridContainsSpace(hoveredSpace)) {
+        redrawTile(painter, hoveredSpace);
     }
 }
 
@@ -88,7 +101,20 @@ void Shisensho::redrawTile(QPainter& painter, const struct Space& space) {
     QRect target = QRect(targetX, targetY, tileWidth, tileHeight);
 
     Tile& tile = tiles[space.col][space.row];
-    QString imagePath = tile.isSelected() ? ":/images/shimmering_tiles.png" : ":/images/mahjong_tiles.png";
+    QString imagePath;
+
+    //tile hovered over
+    if(space == hoveredSpace) {
+        QString hoveredTilePath = ":/images/dim_tiles.png";
+        QString hoveredSelectedTilePath = ":/images/dim_selected_tiles.png";
+        imagePath = tile.isSelected() ? hoveredSelectedTilePath : hoveredTilePath;
+    }
+    else {
+        QString selectedTilePath = ":/images/selected_tiles.png";
+        QString unselectedTilePath = ":/images/mahjong_tiles.png";
+        imagePath = tile.isSelected() ? selectedTilePath : unselectedTilePath;
+    }
+
     QImage spritesheet = QImage(imagePath);
 
     QRect source = QRect(tile.getX(), tile.getY() + verticalShift, tileWidth, tileHeight);
@@ -115,27 +141,33 @@ struct Space Shisensho::findSpace(const unsigned x, const unsigned y) const {
 }
 
 void Shisensho::mouseMoveEvent(QMouseEvent* event) {
-//    int x = event->x();
-//    int y = event->y();
+    int x = event->x();
+    int y = event->y();
 
-//    Tile* clickedTile = findTile(x, y);
+    struct Space newHoveredSpace = findSpace(x,y);
 
-//    //checking if tile clicked
-//    if(clickedTile != nullptr) {
-//        //marking previously hovered tile as not hovered
-//        if(hoveredTile != nullptr) {
-//            hoveredTile->markNotHovered();
-//        }
+    //mousing hovering over tile
+    if(gridContainsSpace(newHoveredSpace) && hoveredSpace != newHoveredSpace) {
+        //mouse left previous tile
+        if(gridContainsSpace(hoveredSpace)) {
+            Tile& prevHoveredTile = tiles[hoveredSpace.col][hoveredSpace.row];
+            prevHoveredTile.markNotHovered();
+            updatedSpace = hoveredSpace;
+        }
 
-//        hoveredTile = clickedTile;
-//        clickedTile->markHovered();
-//        repaint();
-//    }
-//    //mouse not hovering on any tiles
-//    else if(hoveredTile != nullptr) {
-//        hoveredTile->markNotHovered();
-//        repaint();
-//    }
+        hoveredSpace = newHoveredSpace;
+        Tile& hoveredTile = tiles[hoveredSpace.col][hoveredSpace.row];
+        hoveredTile.markHovered();
+        repaint();
+    }
+    //mouse went from tile to empty space
+    else if(!gridContainsSpace(newHoveredSpace) && gridContainsSpace(hoveredSpace)) {
+        Tile& hoveredTile = tiles[hoveredSpace.col][hoveredSpace.row];
+        hoveredTile.markNotHovered();
+        updatedSpace = hoveredSpace;
+        hoveredSpace = newHoveredSpace;
+        repaint();
+    }
 }
 
 void Shisensho::mousePressEvent(QMouseEvent *event) {

@@ -7,7 +7,8 @@
         <file>Asian Farming_EEZY_RMPL-01-1.jpg</file>
         <file>mahjong_tiles.png</file>
         <file>MJt1-.svg.png</file>
-        <file>shimmering_tiles.png</file>
         <file>dim_tiles.png</file>
+        <file>selected_tiles.png</file>
+        <file>dim_selected_tiles.png</file>
     </qresource>
 </RCC>

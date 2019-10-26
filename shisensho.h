@@ -10,6 +10,16 @@ struct Space {
     int row;
 };
 
+//checks if two spaces have same row and column on grid
+//@param spaceLeft - space on left side of operator
+//@param spaceRight - space on right side of operator
+bool operator==(const struct Space& spaceLeft, const struct Space& spaceRight);
+
+//checks if two spaces do not have same row and column on grid
+//@param spaceLeft - space on left side of operator
+//@param spaceRight - space on right side of operator
+bool operator!=(const struct Space& spaceLeft, const struct Space& spaceRight);
+
 class Shisensho : public QWidget {
 public:
     //constructor
@@ -50,7 +60,7 @@ private:
     bool tilesDrawn;
     bool backgroundDrawn;
     struct Space updatedSpace;
-    Tile* hoveredTile;
+    struct Space hoveredSpace;
 };
 
 #endif // SHISENSHO_H
