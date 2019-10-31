@@ -1,17 +1,20 @@
 #include "mainwindow.h"
-#include "shisensho.h"
+#include "shisenwidget.h"
 #include <QApplication>
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    //MainWindow w;
+
+    //title screen
+//    MainWindow w;
+//    w.show();
 
     //shisensho screen
-    QWidget* shisen = new Shisensho();
+    QWidget* shisen = new ShisenWidget();
     MainWindow w(shisen);
-
     w.show();
+
     return a.exec();
 }

@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "titlescreen.h"
-#include "shisensho.h"
+#include "shisenwidget.h"
 #include <iostream>
 
 MainWindow::MainWindow() {
@@ -25,7 +25,7 @@ void MainWindow::initializeSettings() {
 }
 
 void MainWindow::toShisensho() {
-    QWidget* shisen = new Shisensho(this);
+    QWidget* shisen = new ShisenWidget(this);
     this->setCentralWidget(shisen);
 }
 
