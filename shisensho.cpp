@@ -30,6 +30,22 @@ Shisensho::Shisensho() {
     selectedTiles = std::vector<Tile*>();
 }
 
+Shisensho::Shisensho(const unsigned cols, const unsigned rows) {
+    assert((cols * rows) % 2 == 0);
+
+    this->cols = cols;
+    this->rows = rows;
+    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
+
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            tiles[i][j] = new Tile(randomTile());
+        }
+    }
+
+    selectedTiles = std::vector<Tile*>();
+}
+
 std::vector<std::vector<const Tile*>> Shisensho::getTiles() const {
     auto tilesCopy = std::vector<std::vector<const Tile*>>(cols, std::vector<const Tile*>(rows));
 

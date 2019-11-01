@@ -25,6 +25,11 @@ public:
     //creates 12 x 5 shisensho game
     Shisensho();
 
+    //creates game of custom size. must contain even number of tiles
+    //@param cols - number of cols
+    //@param rows - number of rows
+    Shisensho(const unsigned cols, const unsigned rows);
+
     //returns the array of tiles
     std::vector<std::vector<const Tile*>> getTiles() const;
 

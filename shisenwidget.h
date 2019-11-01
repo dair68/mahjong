@@ -8,9 +8,11 @@
 
 class ShisenWidget : public QWidget {
 public:
-    //constructor
-    //@param parent - a parent MainWindow. nullptr by default.
-    ShisenWidget(MainWindow* parent=nullptr);
+    //creates shisensho screen with game of custom size
+    //@param parent - a parent MainWindow. nullptr by default
+    //@param cols - number of columns in game. total number of tiles must be even
+    //@param rows - number of rows in game. total number of tiles must be even
+    ShisenWidget(MainWindow* parent=nullptr, const unsigned cols=12, const unsigned rows=5);
 
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;

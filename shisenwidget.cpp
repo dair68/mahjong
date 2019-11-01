@@ -1,13 +1,15 @@
 #include "shisenwidget.h"
 #include <QPainter>
-#include <math.h>
+#include <cmath>
 #include <QMouseEvent>
 
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
-ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
-    game = Shisensho();
+ShisenWidget::ShisenWidget(MainWindow* parent, const unsigned cols, const unsigned rows) : QWidget(parent){
+    assert((cols * rows) % 2 == 0);
+
+    game = Shisensho(cols, rows);
     drawBackground = true;
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
