@@ -3,33 +3,33 @@
 #include <math.h>
 #include <QMouseEvent>
 
+unsigned ShisenWidget::tileWidth = 54;
+unsigned ShisenWidget::tileHeight= 65;
+
 ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
     game = Shisensho();
-    tilesDrawn = false;
-    backgroundDrawn = false;
+    drawBackground = true;
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
 
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
-    this->setMinimumSize(800,600);
+    setMinimumSize(800,600);
     setMouseTracking(true);
+
+    gridX = (width() - tileWidth*game.getCols())/2;
+    gridY = (height() - tileHeight*game.getRows())/2;
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
 
     //checking if background needs to be drawn
-    if(!backgroundDrawn) {
+    if(drawBackground) {
         QBrush brush = QBrush(Qt::darkGreen);
         painter.fillRect(0, 0, width(), height(), brush);
-        backgroundDrawn = true;
-    }
-
-    //checking if tiles need to be drawn
-    if(!tilesDrawn) {
         drawTiles(painter);
-        tilesDrawn = true;
+        drawBackground = false;
     }
 
     //checking if a tile needs to be repainted
@@ -45,19 +45,14 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
 }
 
 void ShisenWidget::drawTiles(QPainter& painter) const {
-    int tileWidth = 54;
-    int tileHeight = 65;
-    int topCornerX = (width() - tileWidth*game.getCols())/2;
-    int topCornerY = (height() - tileHeight*game.getRows())/2;
-
     //drawing tiles
     for(int i=0; i<game.getCols(); i++) {
         for(int j=game.getRows()-1; j>=0; j--) {
             std::vector<std::vector<const Tile*>> tiles = game.getTiles();
             Tile tile = *tiles[i][j];
 
-            int targetX = topCornerX + i*tileWidth;
-            int targetY = topCornerY + j*tileHeight;
+            int targetX = gridX + i*tileWidth;
+            int targetY = gridY + j*tileHeight;
             QRectF target(targetX, targetY, Tile::spriteWidth(), Tile::spriteHeight());
 
             QString selectedPath = ":/images/selected_tiles.png";
@@ -72,12 +67,10 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
     }
 }
 
-void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) {
-    int tileWidth = 54;
-    int tileHeight = 65;
+void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) const {
     int verticalShift = Tile::spriteHeight() - tileHeight;
-    int topCornerX = (width() - tileWidth*game.getCols())/2;
-    int topCornerY = (height() - tileHeight*game.getRows())/2 + verticalShift;
+    int topCornerX = gridX;
+    int topCornerY = gridY + verticalShift;
 
     int targetX = topCornerX + tileWidth * space.col;
     int targetY = topCornerY + tileHeight * space.row;
@@ -112,10 +105,9 @@ bool ShisenWidget::gridContainsSpace(const struct Space &space) const {
 }
 
 struct Space ShisenWidget::findSpace(const unsigned x, const unsigned y) const {
-    int tileWidth = 54;
-    int tileHeight = 65;
-    int topCornerX = (width() - tileWidth*12)/2;
-    int topCornerY = (height() - tileHeight*5)/2 + Tile::spriteHeight() - tileHeight;
+    int verticalShift = Tile::spriteHeight() - tileHeight;
+    int topCornerX = gridX;
+    int topCornerY = gridY + verticalShift;
 
     int col = floor((double)(x - topCornerX) / tileWidth);
     int row = floor((double)(y - topCornerY) / tileHeight);
@@ -131,25 +123,19 @@ void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
     struct Space newHoveredSpace = findSpace(x,y);
 
     //mousing hovering over new tile
-    if(gridContainsSpace(newHoveredSpace) && hoveredSpace != newHoveredSpace) {
-        std::vector<std::vector<const Tile*>> tiles = game.getTiles();
-
+    if(gridContainsSpace(newHoveredSpace) && newHoveredSpace != hoveredSpace) {
         //mouse left previous tile
         if(gridContainsSpace(hoveredSpace)) {
-            const Tile& prevHoveredTile = *tiles[hoveredSpace.col][hoveredSpace.row];
             game.markNotHovered(hoveredSpace);
             updatedSpace = hoveredSpace;
         }
 
         hoveredSpace = newHoveredSpace;
-        const Tile& hoveredTile = *tiles[hoveredSpace.col][hoveredSpace.row];
         game.markHovered(hoveredSpace);
         repaint();
     }
     //mouse went from tile to empty space
     else if(!gridContainsSpace(newHoveredSpace) && gridContainsSpace(hoveredSpace)) {
-//        Tile& hoveredTile = *game.getTiles()[hoveredSpace.col][hoveredSpace.row];
-//        hoveredTile.markNotHovered();
         game.markNotHovered(hoveredSpace);
         updatedSpace = hoveredSpace;
         hoveredSpace = newHoveredSpace;
@@ -174,7 +160,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
             updatedSpace = clickedSpace;
             repaint();
         }
-        //selecting tile if it creates no more than 2 selected tiles total
+        //selecting tile if less than 2 tiles already selected
         else if(gridContainsSpace(clickedSpace) && game.getSelectedTiles().size() < 2) {
             game.selectTile(clickedSpace);
             updatedSpace = clickedSpace;

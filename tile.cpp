@@ -1,11 +1,12 @@
 #include "tile.h"
+#include <cassert>
 #include <random>
 
 unsigned Tile::SPRITE_WIDTH = 64;
 unsigned Tile::SPRITE_HEIGHT = 78;
 
 Tile::Tile() {
-    id = 42;
+    id = 0;
     suit = "none";
     number = 0;
     faceup = true;
@@ -14,6 +15,8 @@ Tile::Tile() {
 }
 
 Tile::Tile(const unsigned id) {
+    assert(0 <= id && id < 42);
+
     this->id = id;
     int suitNum = id / 3;
 

@@ -22,7 +22,7 @@ public:
     //redraws a single space in grid
     //@param painter - a QPainter object pointing to this widget
     //@param space - space containing tile to be redrawn
-    void redrawTile(QPainter& painter, const struct Space& space);
+    void redrawTile(QPainter& painter, const struct Space& space) const;
 
     //checks if a given space exists in tile grid numbered from 0
     //@param space - some space with a column and row
@@ -41,10 +41,13 @@ public:
     void mousePressEvent(QMouseEvent* event) override;
 private:
     Shisensho game;
-    bool tilesDrawn;
-    bool backgroundDrawn;
+    bool drawBackground;
     struct Space updatedSpace;
     struct Space hoveredSpace;
+    int gridX;
+    int gridY;
+    static unsigned tileWidth;
+    static unsigned tileHeight;
 };
 
 #endif // SHISENWIDGET_H

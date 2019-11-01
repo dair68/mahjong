@@ -98,6 +98,9 @@ void Shisensho::selectTile(const struct Space& space) {
 }
 
 void Shisensho::deselectTile(const struct Space& space) {
+    assert(gridContainsSpace(space));
+    assert(tiles[space.col][space.row] != nullptr);
+
     Tile& tile = *tiles[space.col][space.row];
     tile.deselect();
 
@@ -123,6 +126,9 @@ bool Shisensho::spaceEmpty(const struct Space& space) const {
 
 
 void Shisensho::removeTile(const struct Space& space) {
+    assert(gridContainsSpace(space));
+    assert(tiles[space.col][space.row] != nullptr);
+
     //checking for valid space
     if(!spaceEmpty(space)) {
         delete tiles[space.col][space.row];
@@ -130,10 +136,8 @@ void Shisensho::removeTile(const struct Space& space) {
     }
 }
 
-bool Shisensho::gridContainsSpace(const struct Space &space) const {
+bool Shisensho::gridContainsSpace(const struct Space& space) const {
     int row = space.row;
     int col = space.col;
     return  0 <= row && row < rows && 0 <= col && col < cols;
 }
-
-
