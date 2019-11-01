@@ -36,6 +36,12 @@ public:
     //selects tile if not already selected, deselects otherwise
     void toggleSelection();
 
+    //selects tile
+    void select();
+
+    //deselects tile
+    void deselect();
+
     //checks if tile is hovered over
     bool isHoveredOver() const;
 

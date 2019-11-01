@@ -26,7 +26,7 @@ public:
     Shisensho();
 
     //returns the array of tiles
-    std::vector<std::vector<Tile*>> getTiles() const;
+    std::vector<std::vector<const Tile*>> getTiles() const;
 
     //returns number of columns
     unsigned getCols() const;
@@ -35,7 +35,23 @@ public:
     unsigned getRows() const;
 
     //returns selected tiles
-    std::vector<Tile> getSelectedTiles() const;
+    std::vector<const Tile*> getSelectedTiles() const;
+
+    //marks a tile as hovered
+    //@param space - space containing tile
+    void markHovered(const struct Space& space);
+
+    //marks a tile as not hovered
+    //@param space - space containing tile
+    void markNotHovered(const struct Space& space);
+
+    //selects tile and pushes it to selectedTiles no more than 2 tiles selected total
+    //@param space - space containing tile
+    void selectTile(const struct Space& space);
+
+    //deselects tile and removes it from selectedTiles
+    //@param tile - pointer to a tile in grid
+    void deselectTile(const struct Space& space);
 
     //checks if a space in the grid does NOT contain a tile
     //@param space - space in the grid
@@ -54,7 +70,7 @@ private:
     unsigned cols;
     unsigned rows;
     std::vector<std::vector<Tile*>> tiles;
-    std::vector<Tile> selectedTiles;
+    std::vector<Tile*> selectedTiles;
 };
 
 #endif // SHISENSHO_H

@@ -89,6 +89,14 @@ void Tile::toggleSelection() {
     selected = selected ? false : true;
 }
 
+void Tile::select() {
+    selected = true;
+}
+
+void Tile::deselect() {
+    selected = false;
+}
+
 bool Tile::isHoveredOver() const {
     return hovered;
 }

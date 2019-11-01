@@ -10,8 +10,9 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
 
-//    setAttribute(Qt::WA_StaticContents);
-//    setAttribute(Qt::WA_OpaquePaintEvent);
+    setAttribute(Qt::WA_StaticContents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    this->setMinimumSize(800,600);
     setMouseTracking(true);
 }
 
@@ -52,13 +53,17 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
     //drawing tiles
     for(int i=0; i<game.getCols(); i++) {
         for(int j=game.getRows()-1; j>=0; j--) {
-            Tile tile = *game.getTiles()[i][j];
+            std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+            Tile tile = *tiles[i][j];
 
             int targetX = topCornerX + i*tileWidth;
             int targetY = topCornerY + j*tileHeight;
             QRectF target(targetX, targetY, Tile::spriteWidth(), Tile::spriteHeight());
 
-            QString tilesheetPath = ":/images/mahjong_tiles.png";
+            QString selectedPath = ":/images/selected_tiles.png";
+            QString normalPath = ":/images/mahjong_tiles.png";
+            QString tilesheetPath = tile.isSelected() ? selectedPath : normalPath;
+
             QImage spriteSheet = QImage(tilesheetPath);
             QRectF source(tile.getX(), tile.getY(), Tile::spriteWidth(), Tile::spriteHeight());
 
@@ -78,7 +83,8 @@ void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) {
     int targetY = topCornerY + tileHeight * space.row;
     QRect target = QRect(targetX, targetY, tileWidth, tileHeight);
 
-    Tile& tile = *game.getTiles()[space.col][space.row];
+    std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+    const Tile& tile = *tiles[space.col][space.row];
     QString imagePath;
 
     //tile hovered over
@@ -124,24 +130,27 @@ void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
 
     struct Space newHoveredSpace = findSpace(x,y);
 
-    //mousing hovering over tile
+    //mousing hovering over new tile
     if(gridContainsSpace(newHoveredSpace) && hoveredSpace != newHoveredSpace) {
+        std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+
         //mouse left previous tile
         if(gridContainsSpace(hoveredSpace)) {
-            Tile& prevHoveredTile = *game.getTiles()[hoveredSpace.col][hoveredSpace.row];
-            prevHoveredTile.markNotHovered();
+            const Tile& prevHoveredTile = *tiles[hoveredSpace.col][hoveredSpace.row];
+            game.markNotHovered(hoveredSpace);
             updatedSpace = hoveredSpace;
         }
 
         hoveredSpace = newHoveredSpace;
-        Tile& hoveredTile = *game.getTiles()[hoveredSpace.col][hoveredSpace.row];
-        hoveredTile.markHovered();
+        const Tile& hoveredTile = *tiles[hoveredSpace.col][hoveredSpace.row];
+        game.markHovered(hoveredSpace);
         repaint();
     }
     //mouse went from tile to empty space
     else if(!gridContainsSpace(newHoveredSpace) && gridContainsSpace(hoveredSpace)) {
-        Tile& hoveredTile = *game.getTiles()[hoveredSpace.col][hoveredSpace.row];
-        hoveredTile.markNotHovered();
+//        Tile& hoveredTile = *game.getTiles()[hoveredSpace.col][hoveredSpace.row];
+//        hoveredTile.markNotHovered();
+        game.markNotHovered(hoveredSpace);
         updatedSpace = hoveredSpace;
         hoveredSpace = newHoveredSpace;
         repaint();
@@ -156,30 +165,20 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
 
     //checking if tile needs to be updated
     if(gridContainsSpace(clickedSpace)) {
-        Tile& clickedTile = *game.getTiles()[clickedSpace.col][clickedSpace.row];
+        std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+        const Tile& clickedTile = *tiles[clickedSpace.col][clickedSpace.row];
 
         //deselecting a tile
         if(clickedTile.isSelected()) {
-            clickedTile.toggleSelection();
+            game.deselectTile(clickedSpace);
             updatedSpace = clickedSpace;
-
             repaint();
         }
         //selecting tile if it creates no more than 2 selected tiles total
-//        else if(selectedTiles[0] == nullptr || selectedTiles[1] == nullptr) {
-//            clickedTile.toggleSelection();
-//            updatedSpace = clickedSpace;
-
-//            //vacant position for selected tile at 0 index
-//            if(selectedTiles[0] == nullptr) {
-//                selectedTiles[0] = &clickedTile;
-//            }
-//            //vacant position for selected tile at 1 index
-//            else {
-//                selectedTiles[1] = &clickedTile;
-//            }
-
-//            repaint();
-//        }
+        else if(gridContainsSpace(clickedSpace) && game.getSelectedTiles().size() < 2) {
+            game.selectTile(clickedSpace);
+            updatedSpace = clickedSpace;
+            repaint();
+        }
     }
 }

@@ -12,9 +12,12 @@ int main(int argc, char *argv[])
 //    w.show();
 
     //shisensho screen
-    QWidget* shisen = new ShisenWidget();
-    MainWindow w(shisen);
-    w.show();
+//    QWidget* shisen = new ShisenWidget();
+//    MainWindow w(shisen);
+//    w.show();
+
+    QWidget* shisenWindow = new ShisenWidget();
+    shisenWindow->show();
 
     return a.exec();
 }
