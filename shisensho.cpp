@@ -265,15 +265,35 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
     }
 
     //spaces share same row
-    if(space1.row == space2.row) {
-        //checking if every space between spaces are vacant
-        for(int i=space1.col+1; i<space2.col; i++) {
-            //found occupied space. spaces not connected
-            if(tiles[i][space1.row] != nullptr) {
-                return path;
+    if(row1 == row2) {
+        //checking if direct path between spaces
+        if(simplePath(space1, space2)) {
+            path = {space1, space2};
+            return path;
+        }
+
+        //looking for paths type |-| or |_|
+        for(int j=-1; j<=(int)rows; j++) {
+            struct Space leftCorner = {col1, j};
+            struct Space rightCorner = {col2, j};
+
+            //found path
+            if(simplePath(space1, leftCorner) && simplePath(leftCorner, rightCorner) && simplePath(rightCorner, space2)) {
+                //first path found
+                if(path.size() == 0) {
+                    path = {space1, leftCorner, rightCorner, space2};
+                }
+                //new path found
+                else {
+                    std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
+
+                    //new path shorter
+                    if(pathLength(path2) < pathLength(path)) {
+                        path = path2;
+                    }
+                }
             }
         }
-        path = {space1, space2};
         return path;
     }
 
