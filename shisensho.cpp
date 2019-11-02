@@ -196,6 +196,32 @@ bool Shisensho::simplePath(const struct Space &space1, const struct Space &space
     return false;
 }
 
+bool Shisensho::connected(const std::vector<struct Space>& path) const {
+    assert(path.size() >= 2);
+
+    //checking if spaces between endpoints are vacant
+    for(int i=1; i<path.size()-1; i++) {
+        struct Space space = path[i];
+        //space contains tile, path not connected
+        if(!spaceEmpty(space)) {
+            return false;
+        }
+    }
+
+    //checking if path segments contain no tiles
+    for(int i=0; i<path.size()-1; i++) {
+        struct Space space1 = path[i];
+        struct Space space2 = path[i + 1];
+
+        //not a simple path, path not connected
+        if(!simplePath(space1, space2)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 unsigned Shisensho::pathLength(const std::vector<struct Space>& path) const {
     assert(path.size() >= 2);
 
@@ -244,21 +270,11 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
             struct Space topCorner = {i, row1};
             struct Space bottomCorner = {i, row2};
 
-            //found a path!
-            if(simplePath(space1, topCorner) && simplePath(topCorner, bottomCorner) && simplePath(bottomCorner, space2)) {
-                //first path found
-                if(path.size() == 0) {
-                    path = {space1, topCorner, bottomCorner, space2};
-                }
-                //new path found
-                else {
-                    std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
+            std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
 
-                    //checking if new path shorter than old path
-                    if(pathLength(path2) < pathLength(path)) {
-                        path = path2;
-                    }
-                }
+            //found a path!
+            if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
+                path = path2;
             }
         }
         return path;
@@ -276,22 +292,11 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
         for(int j=-1; j<=(int)rows; j++) {
             struct Space leftCorner = {col1, j};
             struct Space rightCorner = {col2, j};
+            std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
 
             //found path
-            if(simplePath(space1, leftCorner) && simplePath(leftCorner, rightCorner) && simplePath(rightCorner, space2)) {
-                //first path found
-                if(path.size() == 0) {
-                    path = {space1, leftCorner, rightCorner, space2};
-                }
-                //new path found
-                else {
-                    std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
-
-                    //new path shorter
-                    if(pathLength(path2) < pathLength(path)) {
-                        path = path2;
-                    }
-                }
+            if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
+                path = path2;
             }
         }
         return path;

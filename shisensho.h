@@ -64,6 +64,11 @@ public:
     //returns true if connectable by horizontal or vertical line that does not cross other tiles
     bool simplePath(const struct Space& space1, const struct Space& space2) const;
 
+    //checks if a path does not contain any tiles other than at the endpoints
+    //@param path - a sequence of at least 2 spaces
+    //returns true in no tiles anywhere on path except at endpoints, false otherwise
+    bool connected(const std::vector<struct Space>& path) const;
+
     //finds length of shortest path needed to connect a sequence of spaces
     //@param path - a sequence of at least 2 spaces
     //returns shortest length needed to connect spaces
