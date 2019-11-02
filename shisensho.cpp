@@ -302,6 +302,44 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
         return path;
     }
 
+    //searching for an L-shaped path
+    struct Space corner1 = {col2, row1};
+    struct Space corner2 = {col1, row2};
+    std::vector<struct Space> lPath1 = {space1, corner1, space2};
+    std::vector<struct Space> lPath2 = {space1, corner2, space2};
+
+    //found path
+    if(connected(lPath1)) {
+        return lPath1;
+    }
+    else if(connected(lPath2)) {
+        return lPath2;
+    }
+
+    //searching for path with horizontal, vertical, then horizontal segment
+    for(int i=-1; i<=(int)cols; i++) {
+        struct Space topCorner = {i, row1};
+        struct Space bottomCorner = {i, row2};
+        std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
+
+        //found new viable path
+        if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
+            path = path2;
+        }
+    }
+
+    //searching for a path with vertical, horizontal, then vertical segment
+    for(int j=-1; j<=(int)rows; j++) {
+        struct Space leftCorner = {col1, j};
+        struct Space rightCorner = {col2, j};
+        std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
+
+        //found new viable path
+        if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
+            path = path2;
+        }
+    }
+
     return path;
 }
 
