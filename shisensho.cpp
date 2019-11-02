@@ -27,7 +27,7 @@ Shisensho::Shisensho() {
         }
     }
 
-    selectedTiles = std::vector<Tile*>();
+    selectedTiles = std::vector<struct Space>();
 }
 
 Shisensho::Shisensho(const unsigned cols, const unsigned rows) {
@@ -39,11 +39,11 @@ Shisensho::Shisensho(const unsigned cols, const unsigned rows) {
 
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            tiles[i][j] = new Tile(randomTile());
+            tiles[i][j] = new Tile(4);
         }
     }
 
-    selectedTiles = std::vector<Tile*>();
+    selectedTiles = std::vector<struct Space>();
 }
 
 std::vector<std::vector<const Tile*>> Shisensho::getTiles() const {
@@ -74,12 +74,15 @@ unsigned Shisensho::getRows() const {
     return rows;
 }
 
-std::vector<const Tile*> Shisensho::getSelectedTiles() const {
-    auto selected = std::vector<const Tile*>(selectedTiles.size());
+std::vector<struct Space> Shisensho::getSelectedTiles() const {
+    auto selected = std::vector<struct Space>();
 
     //copy pointers as const pointers
     for(int i=0; i<selectedTiles.size(); i++) {
-        selected[i] = selectedTiles[i];
+        const int col = selectedTiles[i].col;
+        const int row = selectedTiles[i].row;
+        const struct Space space = {col, row};
+        selected.push_back(space);
     }
 
     return selected;
@@ -109,7 +112,7 @@ void Shisensho::selectTile(const struct Space& space) {
     if(selectedTiles.size() < 2) {
         Tile& tile = *tiles[space.col][space.row];
         tile.select();
-        selectedTiles.push_back(&tile);
+        selectedTiles.push_back(space);
     }
 }
 
@@ -120,12 +123,12 @@ void Shisensho::deselectTile(const struct Space& space) {
     Tile& tile = *tiles[space.col][space.row];
     tile.deselect();
 
-    //tile is first element
-    if(selectedTiles[0] == &tile) {
+    //tile is first selected tile
+    if(selectedTiles[0] == space) {
         selectedTiles[0] = selectedTiles[1];
         selectedTiles.pop_back();
     }
-    //tile is second element
+    //tile is second selected tile
     else {
         selectedTiles.pop_back();
     }
@@ -156,4 +159,51 @@ bool Shisensho::gridContainsSpace(const struct Space& space) const {
     int row = space.row;
     int col = space.col;
     return  0 <= row && row < rows && 0 <= col && col < cols;
+}
+
+std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const struct Space& space2) const {
+    //ensuring first argument is higher space
+    if(space1.row > space2.row) {
+        return findPath(space2, space1);
+    }
+    //ensuring first argument is leftmost space if sharing same row
+    else if(space1.row == space2.row && space1.col > space2.col) {
+        return findPath(space2, space1);
+    }
+
+    std::vector<struct Space> path;
+
+    //spaces share same column
+    if(space1.col == space2.col) {
+        //checking if every space between spaces are vacant
+        for(int j=space1.row + 1; j<space2.row; j++) {
+            //found occupied space. spaces not connected
+            if(tiles[space1.col][j] != nullptr) {
+                return path;
+            }
+        }
+        path = {space1, space2};
+        return path;
+    }
+}
+
+void Shisensho::deselectTiles() {
+    //deselecting each selected tile
+    for(int i=0; i<selectedTiles.size(); i++) {
+        struct Space selected = selectedTiles[i];
+        Tile& tile = *tiles[selected.col][selected.row];
+        tile.deselect();
+    }
+
+    selectedTiles = std::vector<struct Space>();
+}
+
+void Shisensho::removeSelectedTiles() {
+    //removing each selected tile
+    for(int i=0; i<selectedTiles.size(); i++) {
+        struct Space selected = selectedTiles[i];
+        removeTile(selected);
+    }
+
+    selectedTiles = std::vector<struct Space>();
 }

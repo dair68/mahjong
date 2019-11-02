@@ -7,12 +7,17 @@
 #include "shisensho.h"
 
 class ShisenWidget : public QWidget {
+    Q_OBJECT
 public:
     //creates shisensho screen with game of custom size
     //@param parent - a parent MainWindow. nullptr by default
+    ShisenWidget(MainWindow* parent=nullptr);
+
+    //creates shisensho screen with game of custom size
     //@param cols - number of columns in game. total number of tiles must be even
     //@param rows - number of rows in game. total number of tiles must be even
-    ShisenWidget(MainWindow* parent=nullptr, const unsigned cols=12, const unsigned rows=5);
+    //@param parent - a parent MainWindow. nullptr by default
+    ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent=nullptr);
 
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;
@@ -20,6 +25,10 @@ public:
     //draws all the tiles at once
     //@param painter - a QPainter object pointing to this widget
     void drawTiles(QPainter& painter) const;
+
+    //draws path over a pair of matching tiles before removing them
+    //@param painter - a QPainter object pointing to this widget
+    void drawPath(QPainter& painter) const;
 
     //redraws a single space in grid
     //@param painter - a QPainter object pointing to this widget
@@ -36,16 +45,25 @@ public:
     //returns space containing pixel. space might lie outside the grid
     struct Space findSpace(const unsigned x, const unsigned y) const;
 
+    //finds the point at tile center for a given space
+    //@param space - some space. does not need to be in grid or contain tile
+    //returns the point that would be in the center of tile located at space
+    QPoint findCenterPoint(const struct Space& space) const;
+
     //colors tile if mouse hovers over it
     void mouseMoveEvent(QMouseEvent* event) override;
 
     //event for clicking tiles
     void mousePressEvent(QMouseEvent* event) override;
+public slots:
+    //sets drawBackground to true
+    void redrawBackground();
 private:
     Shisensho game;
     bool drawBackground;
     struct Space updatedSpace;
     struct Space hoveredSpace;
+    std::vector<struct Space> path;
     int gridX;
     int gridY;
     static unsigned tileWidth;

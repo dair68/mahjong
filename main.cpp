@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
 //    w.show();
 
     //shisensho screen
-    QWidget* shisenWindow = new ShisenWidget(nullptr, 5, 4);
-    shisenWindow->show();
+    ShisenWidget shisenWin(5, 4);
+    shisenWin.show();
 
     return a.exec();
 }

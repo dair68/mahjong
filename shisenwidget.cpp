@@ -2,17 +2,36 @@
 #include <QPainter>
 #include <cmath>
 #include <QMouseEvent>
+#include <QDebug>
+#include <QTimer>
 
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
-ShisenWidget::ShisenWidget(MainWindow* parent, const unsigned cols, const unsigned rows) : QWidget(parent){
+ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
+    game = Shisensho();
+    drawBackground = true;
+    updatedSpace = {-1, -1};
+    hoveredSpace = {-1, -1};
+    path = std::vector<struct Space>();
+
+    setAttribute(Qt::WA_StaticContents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setMinimumSize(800,600);
+    setMouseTracking(true);
+
+    gridX = (width() - tileWidth*game.getCols())/2;
+    gridY = (height() - tileHeight*game.getRows())/2;
+}
+
+ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent) : QWidget(parent){
     assert((cols * rows) % 2 == 0);
 
     game = Shisensho(cols, rows);
     drawBackground = true;
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
+    path = std::vector<struct Space>();
 
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -26,46 +45,82 @@ ShisenWidget::ShisenWidget(MainWindow* parent, const unsigned cols, const unsign
 void ShisenWidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
 
-    //checking if background needs to be drawn
-    if(drawBackground) {
-        QBrush brush = QBrush(Qt::darkGreen);
-        painter.fillRect(0, 0, width(), height(), brush);
-        drawTiles(painter);
-        drawBackground = false;
-    }
-
     //checking if a tile needs to be repainted
     if(gridContainsSpace(updatedSpace)) {
+        qDebug() << "updating tile at space {" << updatedSpace.col << ", " << updatedSpace.row << "}";
         redrawTile(painter, updatedSpace);
         updatedSpace = {-1, -1};
     }
 
     //checking if any newly hovered tiles
     if(gridContainsSpace(hoveredSpace)) {
+        qDebug() << "drawing hovered tile";
         redrawTile(painter, hoveredSpace);
+    }
+
+    //drawing any paths
+    if(path.size() > 0) {
+        qDebug() << "drawing path";
+        drawPath(painter);
+        path.clear();
+
+        //adding delay before tiles removed
+        drawBackground = false;
+        int milliseconds = 500;
+        QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
+    }
+
+    //checking if background needs to be drawn
+    if(drawBackground) {
+        qDebug() << "Drawing tiles";
+        QBrush brush = QBrush(Qt::darkGreen);
+        painter.fillRect(0, 0, width(), height(), brush);
+        drawTiles(painter);
+        drawBackground = false;
     }
 }
 
 void ShisenWidget::drawTiles(QPainter& painter) const {
+    std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+
     //drawing tiles
     for(int i=0; i<game.getCols(); i++) {
         for(int j=game.getRows()-1; j>=0; j--) {
-            std::vector<std::vector<const Tile*>> tiles = game.getTiles();
-            Tile tile = *tiles[i][j];
+            //space occupied by tile
+            if(tiles[i][j] != nullptr) {
+                Tile tile = *tiles[i][j];
 
-            int targetX = gridX + i*tileWidth;
-            int targetY = gridY + j*tileHeight;
-            QRectF target(targetX, targetY, Tile::spriteWidth(), Tile::spriteHeight());
+                int targetX = gridX + i*tileWidth;
+                int targetY = gridY + j*tileHeight;
+                QRectF target(targetX, targetY, Tile::spriteWidth(), Tile::spriteHeight());
 
-            QString selectedPath = ":/images/selected_tiles.png";
-            QString normalPath = ":/images/mahjong_tiles.png";
-            QString tilesheetPath = tile.isSelected() ? selectedPath : normalPath;
+                QString selectedPath = ":/images/selected_tiles.png";
+                QString normalPath = ":/images/mahjong_tiles.png";
+                QString tilesheetPath = tile.isSelected() ? selectedPath : normalPath;
 
-            QImage spriteSheet = QImage(tilesheetPath);
-            QRectF source(tile.getX(), tile.getY(), Tile::spriteWidth(), Tile::spriteHeight());
+                QImage spriteSheet = QImage(tilesheetPath);
+                QRectF source(tile.getX(), tile.getY(), Tile::spriteWidth(), Tile::spriteHeight());
 
-            painter.drawImage(target, spriteSheet, source);
+                painter.drawImage(target, spriteSheet, source);
+            }
         }
+    }
+}
+
+void ShisenWidget::drawPath(QPainter& painter) const {
+    assert(path.size() > 0);
+
+    QPen pen = QPen(Qt::red, 4);
+    painter.setPen(pen);
+
+    for(int i=0; i<path.size()-1; i++) {
+        struct Space space1 = path[i];
+        struct Space space2 = path[i+1];
+
+        QPoint point1 = findCenterPoint(space1);
+        QPoint point2 = findCenterPoint(space2);
+
+        painter.drawLine(point1, point2);
     }
 }
 
@@ -79,25 +134,29 @@ void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) cons
     QRect target = QRect(targetX, targetY, tileWidth, tileHeight);
 
     std::vector<std::vector<const Tile*>> tiles = game.getTiles();
-    const Tile& tile = *tiles[space.col][space.row];
-    QString imagePath;
 
-    //tile hovered over
-    if(space == hoveredSpace) {
-        QString hoveredTilePath = ":/images/dim_tiles.png";
-        QString hoveredSelectedTilePath = ":/images/dim_selected_tiles.png";
-        imagePath = tile.isSelected() ? hoveredSelectedTilePath : hoveredTilePath;
+    //checking if space contains a tile
+    if(tiles[space.col][space.row] != nullptr) {
+        Tile tile = *tiles[space.col][space.row];
+        QString imagePath;
+
+        //tile hovered over
+        if(space == hoveredSpace) {
+            QString hoveredTilePath = ":/images/dim_tiles.png";
+            QString hoveredSelectedTilePath = ":/images/dim_selected_tiles.png";
+            imagePath = tile.isSelected() ? hoveredSelectedTilePath : hoveredTilePath;
+        }
+        else {
+            QString selectedTilePath = ":/images/selected_tiles.png";
+            QString unselectedTilePath = ":/images/mahjong_tiles.png";
+            imagePath = tile.isSelected() ? selectedTilePath : unselectedTilePath;
+        }
+
+        QImage spritesheet = QImage(imagePath);
+
+        QRect source = QRect(tile.getX(), tile.getY() + verticalShift, tileWidth, tileHeight);
+        painter.drawImage(target, spritesheet, source);
     }
-    else {
-        QString selectedTilePath = ":/images/selected_tiles.png";
-        QString unselectedTilePath = ":/images/mahjong_tiles.png";
-        imagePath = tile.isSelected() ? selectedTilePath : unselectedTilePath;
-    }
-
-    QImage spritesheet = QImage(imagePath);
-
-    QRect source = QRect(tile.getX(), tile.getY() + verticalShift, tileWidth, tileHeight);
-    painter.drawImage(target, spritesheet, source);
 }
 
 bool ShisenWidget::gridContainsSpace(const struct Space &space) const {
@@ -118,6 +177,20 @@ struct Space ShisenWidget::findSpace(const unsigned x, const unsigned y) const {
     return space;
 }
 
+QPoint ShisenWidget::findCenterPoint(const struct Space& space) const {
+    int col = space.col;
+    int row = space.row;
+
+    int verticalShift = Tile::spriteHeight() - tileHeight;
+    int cornerX = gridX + col * tileWidth;
+    int cornerY = gridY + row * tileHeight + verticalShift;
+
+    int centerX = cornerX + tileWidth / 2;
+    int centerY = cornerY + tileHeight / 2;
+
+    return QPoint(centerX, centerY);
+}
+
 void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
     int x = event->x();
     int y = event->y();
@@ -125,23 +198,23 @@ void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
     struct Space newHoveredSpace = findSpace(x,y);
 
     //mousing hovering over new tile
-    if(gridContainsSpace(newHoveredSpace) && newHoveredSpace != hoveredSpace) {
+    if(!game.spaceEmpty(newHoveredSpace) && newHoveredSpace != hoveredSpace) {
         //mouse left previous tile
-        if(gridContainsSpace(hoveredSpace)) {
+        if(gridContainsSpace(hoveredSpace) && !game.spaceEmpty(hoveredSpace)) {
             game.markNotHovered(hoveredSpace);
             updatedSpace = hoveredSpace;
         }
 
         hoveredSpace = newHoveredSpace;
         game.markHovered(hoveredSpace);
-        repaint();
+        update();
     }
     //mouse went from tile to empty space
-    else if(!gridContainsSpace(newHoveredSpace) && gridContainsSpace(hoveredSpace)) {
+    else if(game.spaceEmpty(newHoveredSpace) && !game.spaceEmpty(hoveredSpace)) {
         game.markNotHovered(hoveredSpace);
         updatedSpace = hoveredSpace;
         hoveredSpace = newHoveredSpace;
-        repaint();
+        update();
     }
 }
 
@@ -152,7 +225,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
     struct Space clickedSpace = findSpace(x, y);
 
     //checking if tile needs to be updated
-    if(gridContainsSpace(clickedSpace)) {
+    if(!game.spaceEmpty(clickedSpace)) {
         std::vector<std::vector<const Tile*>> tiles = game.getTiles();
         const Tile& clickedTile = *tiles[clickedSpace.col][clickedSpace.row];
 
@@ -160,13 +233,42 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
         if(clickedTile.isSelected()) {
             game.deselectTile(clickedSpace);
             updatedSpace = clickedSpace;
-            repaint();
+            update();
         }
         //selecting tile if less than 2 tiles already selected
-        else if(gridContainsSpace(clickedSpace) && game.getSelectedTiles().size() < 2) {
+        else if(game.getSelectedTiles().size() < 2) {
             game.selectTile(clickedSpace);
             updatedSpace = clickedSpace;
             repaint();
+
+            //checking if the two selected tiles make a match
+            if(game.getSelectedTiles().size() == 2) {
+                std::vector<struct Space> selected = game.getSelectedTiles();
+                struct Space space1 = selected[0];
+                struct Space space2 = selected[1];
+                std::vector<struct Space> path = game.findPath(space1, space2);
+
+                const Tile tile1 = *tiles[space1.col][space1.row];
+                const Tile tile2 = *tiles[space2.col][space2.row];
+
+                //found match
+                if(tile1 == tile2 && path.size() > 0) {
+                    this->path = path;
+                    game.removeSelectedTiles();
+                    update();
+                }
+                //not a match
+                else {
+                    game.deselectTiles();
+                    drawBackground = true;
+                    update();
+                }
+            }
         }
     }
+}
+
+void ShisenWidget::redrawBackground() {
+    drawBackground = true;
+    update();
 }

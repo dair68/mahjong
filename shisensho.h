@@ -40,7 +40,7 @@ public:
     unsigned getRows() const;
 
     //returns selected tiles
-    std::vector<const Tile*> getSelectedTiles() const;
+    std::vector<struct Space> getSelectedTiles() const;
 
     //marks a tile as hovered
     //@param space - space containing tile
@@ -71,11 +71,27 @@ public:
     //@param space - some space with a column and row
     bool gridContainsSpace(const struct Space& space) const;
 
+    //finds a path between spaces with no more than two bends, if it exists.
+    //@param space1 - first space. does not need to be in grid or contain tile.
+    //@param space2 - second space. does not need to be in grid or contain tile.
+    //path segments are vertical or horizontal lines that do not cross other tiles. empty vector if no path found.
+    std::vector<struct Space> findPath(const struct Space& space1, const struct Space& space2) const;
+
+    //deselects all tiles
+    void deselectTiles();
+
+    //removes all selected tiles from grid
+    void removeSelectedTiles();
+
+    //sees if the 2 selected tiles are matching and connected, removes them from the game if so
+    //@param space1 - first space containing a tile
+    //@param space2 - second space containing a tile
+    void matchTiles();
 private:
     unsigned cols;
     unsigned rows;
     std::vector<std::vector<Tile*>> tiles;
-    std::vector<Tile*> selectedTiles;
+    std::vector<struct Space> selectedTiles;
 };
 
 #endif // SHISENSHO_H
