@@ -1,16 +1,9 @@
 #include "shisensho.h"
 #include <vector>
 #include <QPainter>
-#include <time.h>
+#include <ctime>
 #include <cassert>
-
-bool operator==(const struct Space& spaceLeft, const struct Space& spaceRight) {
-    return spaceLeft.col == spaceRight.col && spaceLeft.row == spaceRight.row;
-}
-
-bool operator!=(const struct Space& spaceLeft, const struct Space& spaceRight) {
-    return spaceLeft.col != spaceRight.col || spaceLeft.row != spaceRight.row;
-}
+#include <QDebug>
 
 Shisensho::Shisensho() {
     cols = 12;
@@ -75,14 +68,14 @@ unsigned Shisensho::getRows() const {
 }
 
 std::vector<struct Space> Shisensho::getSelectedTiles() const {
-    auto selected = std::vector<struct Space>();
+    auto selected = std::vector<struct Space>(selectedTiles.size());
 
     //copy pointers as const pointers
     for(int i=0; i<selectedTiles.size(); i++) {
         const int col = selectedTiles[i].col;
         const int row = selectedTiles[i].row;
         const struct Space space = {col, row};
-        selected.push_back(space);
+        selected[i] = space;
     }
 
     return selected;
@@ -161,30 +154,130 @@ bool Shisensho::gridContainsSpace(const struct Space& space) const {
     return  0 <= row && row < rows && 0 <= col && col < cols;
 }
 
+bool Shisensho::simplePath(const struct Space &space1, const struct Space &space2) const {
+    int col1 = space1.col;
+    int col2 = space2.col;
+    int row1 = space1.row;
+    int row2 = space2.row;
+
+    //ensuring that space1 if topmost space
+    if(row1 > row2) {
+        return simplePath(space2, space1);
+    }
+
+    //spaces share column
+    if(col1 == col2) {
+        //checking if there's no tiles between spaces
+        for(int j=row1 + 1; j<row2; j++) {
+            //found tile. spaces not simply connected
+            if(!spaceEmpty({col1,j})) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //ensuring that space1 is leftmost space
+    if(col1 > col2) {
+        return simplePath(space2, space1);
+    }
+
+    //spaces on same row
+    if(row1 == row2) {
+        //checking if there's no tiles between spaces
+        for(int i=col1 + 1; i<col2; i++) {
+            //found tile. spaces not simply connected
+            if(!spaceEmpty({i,row2})) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+unsigned Shisensho::pathLength(const std::vector<struct Space>& path) const {
+    assert(path.size() >= 2);
+
+    unsigned pathLength = 0;
+
+    //calculating min path length
+    for(int i=0; i<path.size() - 1; i++) {
+        struct Space space1 = path[i];
+        struct Space space2 = path[i + 1];
+
+        int length = abs(space1.row - space2.row) + abs(space1.col - space2.col);
+        pathLength += length;
+    }
+
+    return pathLength;
+}
+
 std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const struct Space& space2) const {
+    int col1 = space1.col;
+    int col2 = space2.col;
+    int row1 = space1.row;
+    int row2 = space2.row;
+
     //ensuring first argument is higher space
-    if(space1.row > space2.row) {
+    if(row1 > row2) {
         return findPath(space2, space1);
     }
     //ensuring first argument is leftmost space if sharing same row
-    else if(space1.row == space2.row && space1.col > space2.col) {
+    else if(row1 == row2 && col1 > col2) {
         return findPath(space2, space1);
     }
 
     std::vector<struct Space> path;
 
     //spaces share same column
-    if(space1.col == space2.col) {
+    if(col1 == col2) {
+        //spaces are simply connected, path found
+        if(simplePath(space1, space2)) {
+            qDebug() << "simple path";
+            path = {space1, space2};
+            return path;
+        }
+
+        //searching for path of form '[' or ']'
+        for(int i=-1; i<=(int)cols; i++) {
+            struct Space topCorner = {i, row1};
+            struct Space bottomCorner = {i, row2};
+
+            //found a path!
+            if(simplePath(space1, topCorner) && simplePath(topCorner, bottomCorner) && simplePath(bottomCorner, space2)) {
+                //first path found
+                if(path.size() == 0) {
+                    path = {space1, topCorner, bottomCorner, space2};
+                }
+                //new path found
+                else {
+                    std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
+
+                    //checking if new path shorter than old path
+                    if(pathLength(path2) < pathLength(path)) {
+                        path = path2;
+                    }
+                }
+            }
+        }
+        return path;
+    }
+
+    //spaces share same row
+    if(space1.row == space2.row) {
         //checking if every space between spaces are vacant
-        for(int j=space1.row + 1; j<space2.row; j++) {
+        for(int i=space1.col+1; i<space2.col; i++) {
             //found occupied space. spaces not connected
-            if(tiles[space1.col][j] != nullptr) {
+            if(tiles[i][space1.row] != nullptr) {
                 return path;
             }
         }
         path = {space1, space2};
         return path;
     }
+
+    return path;
 }
 
 void Shisensho::deselectTiles() {
@@ -195,7 +288,7 @@ void Shisensho::deselectTiles() {
         tile.deselect();
     }
 
-    selectedTiles = std::vector<struct Space>();
+    selectedTiles.clear();
 }
 
 void Shisensho::removeSelectedTiles() {

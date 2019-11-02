@@ -4,21 +4,8 @@
 #include <QWidget>
 #include "mainwindow.h"
 #include "tile.h"
-
-struct Space {
-    int col;
-    int row;
-};
-
-//checks if two spaces have same row and column on grid
-//@param spaceLeft - space on left side of operator
-//@param spaceRight - space on right side of operator
-bool operator==(const struct Space& spaceLeft, const struct Space& spaceRight);
-
-//checks if two spaces do not have same row and column on grid
-//@param spaceLeft - space on left side of operator
-//@param spaceRight - space on right side of operator
-bool operator!=(const struct Space& spaceLeft, const struct Space& spaceRight);
+#include "space.h"
+#include <iostream>
 
 class Shisensho {
 public:
@@ -70,6 +57,17 @@ public:
     //checks if a given space exists in tile grid numbered from 0
     //@param space - some space with a column and row
     bool gridContainsSpace(const struct Space& space) const;
+
+    //checks if two spaces can be connect by uninterrupted horizontal or vertical line
+    //@param space1 - first space. does not need to be in grid or contain tile
+    //@param space2 - second space. does not need to be in grid or contain tile.
+    //returns true if connectable by horizontal or vertical line that does not cross other tiles
+    bool simplePath(const struct Space& space1, const struct Space& space2) const;
+
+    //finds length of shortest path needed to connect a sequence of spaces
+    //@param path - a sequence of at least 2 spaces
+    //returns shortest length needed to connect spaces
+    unsigned pathLength(const std::vector<struct Space>& path) const;
 
     //finds a path between spaces with no more than two bends, if it exists.
     //@param space1 - first space. does not need to be in grid or contain tile.

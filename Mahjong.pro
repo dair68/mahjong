@@ -20,6 +20,7 @@ SOURCES += \
     mainwindow.cpp \
     shisensho.cpp \
     shisenwidget.cpp \
+    space.cpp \
     tile.cpp \
     titlescreen.cpp
 
@@ -27,6 +28,7 @@ HEADERS += \
     mainwindow.h \
     shisensho.h \
     shisenwidget.h \
+    space.h \
     tile.h \
     titlescreen.h
 
