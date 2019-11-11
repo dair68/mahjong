@@ -1,4 +1,5 @@
 #include "shisensho.h"
+#include "space.h"
 #include <vector>
 #include <QPainter>
 #include <ctime>
@@ -6,17 +7,17 @@
 #include <QDebug>
 
 Shisensho::Shisensho() {
+    //setting seed for random tiles
+    srand(time(NULL));
+
     cols = 12;
     rows = 5;
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
-    //setting seed for random tiles
-    srand(time(NULL));
-
-    //generating random tiles
+    //creating empty grid
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            tiles[i][j] = new Tile(randomTile());
+            tiles[i][j] = nullptr;
         }
     }
 
@@ -26,17 +27,96 @@ Shisensho::Shisensho() {
 Shisensho::Shisensho(const unsigned cols, const unsigned rows) {
     assert((cols * rows) % 2 == 0);
 
+    //setting seed for random tiles
+    srand(time(NULL));
+
     this->cols = cols;
     this->rows = rows;
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
+    //creating empty grid
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            tiles[i][j] = new Tile(4);
+            tiles[i][j] = nullptr;
         }
     }
 
     selectedTiles = std::vector<struct Space>();
+}
+
+Shisensho::~Shisensho() {
+    //deleting tiles
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            //tile exists
+            if(tiles[i][j] != nullptr) {
+                delete  tiles[i][j];
+                tiles[i][j] = nullptr;
+            }
+        }
+    }
+}
+
+void Shisensho::clearTiles() {
+    //removing every tile in grid
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            struct Space space = {i,j};
+            if(!spaceEmpty(space)) {
+                removeTile(space);
+            }
+        }
+    }
+}
+
+void Shisensho::createTiles() {
+    int tilePairs = (cols * rows) / 2;
+    std::list<Tile> tileSet = createMahjongSet();
+    int pairs = 0;
+
+    //filling board randomly
+    while(pairs < tilePairs) {
+        std::vector<struct Space> emptySpaces = getEmptySpaces();
+        struct Space space1 = randomElement(emptySpaces);
+
+        std::list<Tile>::iterator iter = randomElement(tileSet);
+        Tile* tile1 = new Tile(*iter);
+        tiles[space1.col][space1.row] = tile1;
+        tileSet.erase(iter);
+
+        emptySpaces = getEmptySpaces();
+        struct Space space2 = randomElement(emptySpaces);
+
+        //searching for matching tiles in tileset
+        std::list<Tile> matches = findElements(tileSet, [&](Tile elem){
+            return matchingTiles(elem, *tile1);
+        });
+        std::list<Tile>::iterator iter2 = randomElement(matches);
+        Tile* tile2 = new Tile(*iter2);
+        tiles[space2.col][space2.row] = tile2;
+
+        iter = std::find(tileSet.begin(), tileSet.end(), *tile2);
+        tileSet.erase(iter);
+
+        pairs++;
+    }
+}
+
+std::vector<struct Space> Shisensho::getEmptySpaces() const {
+    std::vector<struct Space> emptySpaces;
+
+    //finding empty spaces
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            struct Space space = {i,j};
+            //found empty space
+            if(tiles[i][j] == nullptr) {
+                emptySpaces.push_back(space);
+            }
+        }
+    }
+
+    return emptySpaces;
 }
 
 std::vector<std::vector<const Tile*>> Shisensho::getTiles() const {
@@ -361,5 +441,22 @@ void Shisensho::removeSelectedTiles() {
         removeTile(selected);
     }
 
-    selectedTiles = std::vector<struct Space>();
+    selectedTiles.clear();
+}
+
+bool Shisensho::matchingTiles(const Tile& tile1, const Tile& tile2) const {
+    //tiles have same symbol
+    if(tile1 == tile2) {
+        return true;
+    }
+    //both tiles are flowers
+    else if(tile1.getSuit() == "flower" && tile2.getSuit() == "flower") {
+        return true;
+    }
+    //both tiles are seasons
+    else if(tile1.getSuit() == "season" && tile2.getSuit() == "season") {
+        return true;
+    }
+
+    return false;
 }

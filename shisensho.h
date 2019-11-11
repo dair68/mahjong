@@ -12,10 +12,22 @@ public:
     //creates 12 x 5 shisensho game
     Shisensho();
 
+    //destructor
+    ~Shisensho();
+
     //creates game of custom size. must contain even number of tiles
     //@param cols - number of cols
     //@param rows - number of rows
     Shisensho(const unsigned cols, const unsigned rows);
+
+    //removes all the tiles in the grid
+    void clearTiles();
+
+    //creates the game's tiles such that the game is winnable
+    void createTiles();
+
+    //returns array of all the empty spaces on grid
+    std::vector<struct Space> getEmptySpaces() const;
 
     //returns the array of tiles
     std::vector<std::vector<const Tile*>> getTiles() const;
@@ -86,10 +98,11 @@ public:
     //removes all selected tiles from grid
     void removeSelectedTiles();
 
-    //sees if the 2 selected tiles are matching and connected, removes them from the game if so
-    //@param space1 - first space containing a tile
-    //@param space2 - second space containing a tile
-    void matchTiles();
+    //sees if the 2 selected tiles have the correct symbols to be removable
+    //@param tile1 - first tile
+    //@param tile2 - second tile
+    //returns true if tiles have identical ids or are both flowers/seasons, false otherwise
+    bool matchingTiles(const Tile& tile1, const Tile& tile2) const;
 private:
     unsigned cols;
     unsigned rows;

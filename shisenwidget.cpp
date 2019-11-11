@@ -22,6 +22,8 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
 
     gridX = (width() - tileWidth*game.getCols())/2;
     gridY = (height() - tileHeight*game.getRows())/2;
+
+    game.createTiles();
 }
 
 ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent) : QWidget(parent){
@@ -40,6 +42,8 @@ ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow*
 
     gridX = (width() - tileWidth*game.getCols())/2;
     gridY = (height() - tileHeight*game.getRows())/2;
+
+    game.createTiles();
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
@@ -141,7 +145,7 @@ void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) cons
         QString imagePath;
 
         //tile hovered over
-        if(space == hoveredSpace) {
+        if(space == hoveredSpace && game.getSelectedTiles().size() < 2) {
             QString hoveredTilePath = ":/images/dim_tiles.png";
             QString hoveredSelectedTilePath = ":/images/dim_selected_tiles.png";
             imagePath = tile.isSelected() ? hoveredSelectedTilePath : hoveredTilePath;
@@ -252,7 +256,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                 const Tile tile2 = *tiles[space2.col][space2.row];
 
                 //found match
-                if(tile1 == tile2 && path.size() > 0) {
+                if(game.matchingTiles(tile1, tile2) && path.size() > 0) {
                     this->path = path;
                     game.removeSelectedTiles();
                     update();

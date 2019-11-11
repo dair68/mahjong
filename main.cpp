@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 //    w.show();
 
     //shisensho screen
-    ShisenWidget shisenWin(5, 4);
+    ShisenWidget shisenWin;
     shisenWin.show();
 
     return a.exec();

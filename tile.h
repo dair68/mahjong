@@ -67,6 +67,10 @@ public:
     //@param right - tile on right side of operator
     bool operator==(const Tile& right) const;
 
+    //checks if two tiles have different id i.e. the different suit and/or number
+    //@param right - tile on right side of operator
+    bool operator!=(const Tile& right) const;
+
 private:
     static unsigned SPRITE_WIDTH;
     static unsigned SPRITE_HEIGHT;
@@ -78,7 +82,58 @@ private:
     bool hovered;
 };
 
+//obtains a random element from a vector
+//@param vect - a nonempty vector
+//returns a random element, each with equal probability
+template<typename T>
+T randomElement(const std::vector<T>& vect) {
+    assert(vect.size() > 0);
+
+    unsigned randIndex = rand() % vect.size();
+    return vect[randIndex];
+ }
+
+//obtains a random element from a list
+//@param list - a nonempty list
+//returns an iterator pointing to a random element, each with equal probability
+template <typename T>
+typename std::list<T>::iterator randomElement(std::list<T>& list) {
+    assert(list.size() > 0);
+
+    unsigned randShift = rand() % list.size();
+    typename std::list<T>::iterator iter = list.begin();
+
+    //shifting iterator to random element
+    for(int i=0; i<randShift; i++) {
+        iter++;
+    }
+
+    return iter;
+}
+
+//finds all elements within a list that satisfy a certain condition
+//@param list - a nonempty list
+//@param pred - a predicate function that takes an element of type T as a parameter
+//returns a list of all elements satsifying condition
+template <typename T, typename Func>
+typename std::list<T> findElements(const std::list<T>& list, Func pred) {
+    std::list<T> elements;
+
+    //searching through list
+    for(auto iter = list.begin(); iter != list.end(); iter++) {
+        //found element satisfying condition
+        if(pred(*iter)) {
+            elements.insert(elements.begin(), *iter);
+        }
+    }
+
+    return elements;
+}
+
 //generates a random tile, each tile having equal probability
 Tile randomTile();
+
+//creates a list of all 144 tiles within a full mahjong set
+std::list<Tile> createMahjongSet();
 
 #endif // TILE_H
