@@ -111,25 +111,6 @@ typename std::list<T>::iterator randomElement(std::list<T>& list) {
     return iter;
 }
 
-//finds all elements within a list that satisfy a certain condition
-//@param list - a nonempty list
-//@param pred - a predicate function that takes an element of type T as a parameter
-//returns a list of all elements satsifying condition
-template <typename T, typename Func>
-typename std::list<T> findElements(const std::list<T>& list, Func pred) {
-    std::list<T> elements;
-
-    //searching through list
-    for(auto iter = list.begin(); iter != list.end(); iter++) {
-        //found element satisfying condition
-        if(pred(*iter)) {
-            elements.insert(elements.begin(), *iter);
-        }
-    }
-
-    return elements;
-}
-
 //generates a random tile, each tile having equal probability
 Tile randomTile();
 

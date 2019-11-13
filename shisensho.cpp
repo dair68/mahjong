@@ -76,34 +76,42 @@ void Shisensho::createTiles() {
 
     //filling board randomly
     while(pairs < tilePairs) {
-        std::vector<struct Space> emptySpaces = getEmptySpaces();
-        struct Space space1 = randomElement(emptySpaces);
+        std::list<struct Space> emptySpaces = getEmptySpaces();
+        std::list<struct Space>::iterator spaceIter = randomElement(emptySpaces);
+        struct Space space1 = *spaceIter;
 
-        std::list<Tile>::iterator iter = randomElement(tileSet);
-        Tile* tile1 = new Tile(*iter);
+        std::list<Tile>::iterator tileIter = randomElement(tileSet);
+        Tile* tile1 = new Tile(*tileIter);
         tiles[space1.col][space1.row] = tile1;
-        tileSet.erase(iter);
+        tileSet.erase(tileIter);
 
-        emptySpaces = getEmptySpaces();
-        struct Space space2 = randomElement(emptySpaces);
+        emptySpaces.erase(spaceIter);
+        spaceIter = randomElement(emptySpaces);
+        struct Space space2 = *spaceIter;
+
+        std::list<Tile> matches;
 
         //searching for matching tiles in tileset
-        std::list<Tile> matches = findElements(tileSet, [&](Tile elem){
-            return matchingTiles(elem, *tile1);
-        });
-        std::list<Tile>::iterator iter2 = randomElement(matches);
-        Tile* tile2 = new Tile(*iter2);
+        for(Tile tile : tileSet) {
+            //found a match
+            if(matchingTiles(tile, *tile1)) {
+                matches.push_back(tile);
+            }
+        }
+
+        std::list<Tile>::iterator matchIter = randomElement(matches);
+        Tile* tile2 = new Tile(*matchIter);
         tiles[space2.col][space2.row] = tile2;
 
-        iter = std::find(tileSet.begin(), tileSet.end(), *tile2);
-        tileSet.erase(iter);
+        tileIter = std::find(tileSet.begin(), tileSet.end(), *tile2);
+        tileSet.erase(tileIter);
 
         pairs++;
     }
 }
 
-std::vector<struct Space> Shisensho::getEmptySpaces() const {
-    std::vector<struct Space> emptySpaces;
+std::list<struct Space> Shisensho::getEmptySpaces() const {
+    std::list<struct Space> emptySpaces;
 
     //finding empty spaces
     for(int i=0; i<cols; i++) {
@@ -117,6 +125,23 @@ std::vector<struct Space> Shisensho::getEmptySpaces() const {
     }
 
     return emptySpaces;
+}
+
+std::vector<struct Space> Shisensho::getTileSpaces() const {
+    std::vector<struct Space> tileSpaces;
+
+    //finding tile spaces
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            struct Space space = {i, j};
+            //found space containing tile
+            if(tiles[i][j] != nullptr) {
+                tileSpaces.push_back(space);
+            }
+        }
+    }
+
+    return tileSpaces;
 }
 
 std::vector<std::vector<const Tile*>> Shisensho::getTiles() const {
@@ -459,4 +484,27 @@ bool Shisensho::matchingTiles(const Tile& tile1, const Tile& tile2) const {
     }
 
     return false;
+}
+
+bool Shisensho::removablePairs() const {
+    //checking all pairs of spaces in grid
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+
+        }
+    }
+}
+
+bool Shisensho::isOver() const {
+    //searching for tiles
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            //found a tile
+            if(tiles[i][j] != nullptr) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

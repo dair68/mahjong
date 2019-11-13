@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QTimer>
+#include <QHBoxLayout>
 
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
@@ -22,6 +23,20 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
 
     gridX = (width() - tileWidth*game.getCols())/2;
     gridY = (height() - tileHeight*game.getRows())/2;
+
+    winLabel = new QLabel("Game Over", this);
+    winLabel->setStyleSheet("color: maroon;"
+                            "background-color: rgba(255, 255, 255, 50%);"
+                            "font: 50px Arial;");
+    winLabel->setAlignment(Qt::AlignCenter);
+    winLabel->setMinimumSize(width() * .4, height() * .3);
+    winLabel->setMaximumSize(width() * .8, height() * .5);
+    winLabel->hide();
+
+    QLayout* layout = new QVBoxLayout();
+    layout->addWidget(winLabel);
+    layout->setAlignment(winLabel, Qt::AlignHCenter);
+    setLayout(layout);
 
     game.createTiles();
 }
@@ -42,6 +57,8 @@ ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow*
 
     gridX = (width() - tileWidth*game.getCols())/2;
     gridY = (height() - tileHeight*game.getRows())/2;
+
+    winLabel = new QLabel("Game Over!", this);
 
     game.createTiles();
 }
@@ -108,6 +125,11 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
                 painter.drawImage(target, spriteSheet, source);
             }
         }
+    }
+
+    //game over
+    if(game.isOver()) {
+        winLabel->show();
     }
 }
 
@@ -229,7 +251,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
     struct Space clickedSpace = findSpace(x, y);
 
     //checking if tile needs to be updated
-    if(!game.spaceEmpty(clickedSpace)) {
+    if(!game.spaceEmpty(clickedSpace) && !game.isOver()) {
         std::vector<std::vector<const Tile*>> tiles = game.getTiles();
         const Tile& clickedTile = *tiles[clickedSpace.col][clickedSpace.row];
 

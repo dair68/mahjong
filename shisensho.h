@@ -27,7 +27,10 @@ public:
     void createTiles();
 
     //returns array of all the empty spaces on grid
-    std::vector<struct Space> getEmptySpaces() const;
+    std::list<struct Space> getEmptySpaces() const;
+
+    //returns array of all spaces containing tiles
+    std::vector<struct Space> getTileSpaces() const;
 
     //returns the array of tiles
     std::vector<std::vector<const Tile*>> getTiles() const;
@@ -103,6 +106,12 @@ public:
     //@param tile2 - second tile
     //returns true if tiles have identical ids or are both flowers/seasons, false otherwise
     bool matchingTiles(const Tile& tile1, const Tile& tile2) const;
+
+    //checks if there are any removable pairs on the grid
+    bool removablePairs() const;
+
+    //checks if game over due to all tiles removed or no more moves available
+    bool isOver() const;
 private:
     unsigned cols;
     unsigned rows;

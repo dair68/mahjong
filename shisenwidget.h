@@ -2,6 +2,7 @@
 #define SHISENWIDGET_H
 
 #include <QWidget>
+#include <QLabel>
 #include "mainwindow.h"
 #include "tile.h"
 #include "shisensho.h"
@@ -68,6 +69,7 @@ private:
     int gridY;
     static unsigned tileWidth;
     static unsigned tileHeight;
+    QLabel* winLabel;
 };
 
 #endif // SHISENWIDGET_H
