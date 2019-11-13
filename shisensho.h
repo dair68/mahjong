@@ -107,8 +107,14 @@ public:
     //returns true if tiles have identical ids or are both flowers/seasons, false otherwise
     bool matchingTiles(const Tile& tile1, const Tile& tile2) const;
 
+    //checks if 2 tiles can be removed from the grid
+    //@param space1 - first space. must contain a tile
+    //@param space2 - second space. must contain a tile
+    //returns true if tiles having matching symbols and an appropriate path exists
+    bool removableTiles(const struct Space& space1, const struct Space& space2) const;
+
     //checks if there are any removable pairs on the grid
-    bool removablePairs() const;
+    bool hasRemovableTiles() const;
 
     //checks if game over due to all tiles removed or no more moves available
     bool isOver() const;

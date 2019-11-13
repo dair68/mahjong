@@ -26,7 +26,7 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
 
     winLabel = new QLabel("Game Over", this);
     winLabel->setStyleSheet("color: maroon;"
-                            "background-color: rgba(255, 255, 255, 50%);"
+                            "background-color: rgba(255, 255, 255, 70%);"
                             "font: 50px Arial;");
     winLabel->setAlignment(Qt::AlignCenter);
     winLabel->setMinimumSize(width() * .4, height() * .3);
@@ -221,26 +221,29 @@ void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
     int x = event->x();
     int y = event->y();
 
-    struct Space newHoveredSpace = findSpace(x,y);
+    //game still going
+    if(!game.isOver()) {
+        struct Space newHoveredSpace = findSpace(x,y);
 
-    //mousing hovering over new tile
-    if(!game.spaceEmpty(newHoveredSpace) && newHoveredSpace != hoveredSpace) {
-        //mouse left previous tile
-        if(gridContainsSpace(hoveredSpace) && !game.spaceEmpty(hoveredSpace)) {
+        //mousing hovering over new tile
+        if(!game.spaceEmpty(newHoveredSpace) && newHoveredSpace != hoveredSpace) {
+            //mouse left previous tile
+            if(gridContainsSpace(hoveredSpace) && !game.spaceEmpty(hoveredSpace)) {
+                game.markNotHovered(hoveredSpace);
+                updatedSpace = hoveredSpace;
+            }
+
+            hoveredSpace = newHoveredSpace;
+            game.markHovered(hoveredSpace);
+            update();
+        }
+        //mouse went from tile to empty space
+        else if(game.spaceEmpty(newHoveredSpace) && !game.spaceEmpty(hoveredSpace)) {
             game.markNotHovered(hoveredSpace);
             updatedSpace = hoveredSpace;
+            hoveredSpace = newHoveredSpace;
+            update();
         }
-
-        hoveredSpace = newHoveredSpace;
-        game.markHovered(hoveredSpace);
-        update();
-    }
-    //mouse went from tile to empty space
-    else if(game.spaceEmpty(newHoveredSpace) && !game.spaceEmpty(hoveredSpace)) {
-        game.markNotHovered(hoveredSpace);
-        updatedSpace = hoveredSpace;
-        hoveredSpace = newHoveredSpace;
-        update();
     }
 }
 

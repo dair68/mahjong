@@ -486,25 +486,64 @@ bool Shisensho::matchingTiles(const Tile& tile1, const Tile& tile2) const {
     return false;
 }
 
-bool Shisensho::removablePairs() const {
-    //checking all pairs of spaces in grid
-    for(int i=0; i<cols; i++) {
-        for(int j=0; j<rows; j++) {
+bool Shisensho::removableTiles(const struct Space& space1, const struct Space& space2) const {
+    assert(tiles[space1.col][space1.row] != nullptr && tiles[space2.col][space2.row] != nullptr);
 
-        }
-    }
+    std::vector<Space> path = findPath(space1, space2);
+    Tile tile1 = *tiles[space1.col][space1.row];
+    Tile tile2 = *tiles[space2.col][space2.row];
+
+    return path.size() > 0 && matchingTiles(tile1, tile2);
 }
 
-bool Shisensho::isOver() const {
-    //searching for tiles
+bool Shisensho::hasRemovableTiles() const {
+    std::map<unsigned, std::list<Space>> leftoverTiles;
+
+    //parsing tiles from grid
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
             //found a tile
             if(tiles[i][j] != nullptr) {
-                return false;
+                Tile tile = *tiles[i][j];
+                Space space = {i,j};
+                unsigned id = tile.getId();
+
+                //grouping all seasons under id 7 in map
+                if(7 <= id && id <= 10) {
+                    id = 7;
+                }
+                //grouping all flowers under id 11 in map
+                else if(11 <= id && id <= 14) {
+                    id = 11;
+                }
+
+                auto iter = leftoverTiles.find(id);
+
+                //matching tile already found
+                if(iter != leftoverTiles.end()) {
+                    std::list<Space> matchingTiles = iter->second;
+
+                    //searching for removable pair of tiles
+                    for(struct Space prevSpace : matchingTiles) {
+                        //found removable tiles
+                        if(removableTiles(space, prevSpace)) {
+                            return true;
+                        }
+                    }
+                }
+                //new tile found
+                else {
+                    std::list<Space> tileSpaces;
+                    tileSpaces.push_back(space);
+                    leftoverTiles[tile.getId()] = tileSpaces;
+                }
             }
         }
     }
 
-    return true;
+    return false;
+}
+
+bool Shisensho::isOver() const {
+    return !hasRemovableTiles();
 }
