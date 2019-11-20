@@ -12,13 +12,20 @@ public:
     //creates 12 x 5 shisensho game
     Shisensho();
 
+    //creates game of custom size. must contain even number of tiles
+    //@param numCols - number of cols
+    //@param numRows - number of rows
+    Shisensho(const unsigned numCols, const unsigned numRows);
+
+    //copy constructor. creates a deep copy
+    Shisensho(const Shisensho& game);
+
+    //assignment operator. creates deep copy
+    //@param game - Shisensho game to copy
+    Shisensho& operator=(const Shisensho& game);
+
     //destructor
     ~Shisensho();
-
-    //creates game of custom size. must contain even number of tiles
-    //@param cols - number of cols
-    //@param rows - number of rows
-    Shisensho(const unsigned cols, const unsigned rows);
 
     //removes all the tiles in the grid
     void clearTiles();
@@ -42,7 +49,7 @@ public:
     unsigned getRows() const;
 
     //returns selected tiles
-    std::vector<struct Space> getSelectedTiles() const;
+    std::list<struct Space> getSelectedTiles() const;
 
     //marks a tile as hovered
     //@param space - space containing tile
@@ -119,10 +126,14 @@ public:
     //checks if game over due to all tiles removed or no more moves available
     bool isOver() const;
 private:
+    //turns this object into a deep copy
+    //@param game - shisensho game to copy
+    void copy(const Shisensho& game);
+
     unsigned cols;
     unsigned rows;
     std::vector<std::vector<Tile*>> tiles;
-    std::vector<struct Space> selectedTiles;
+    std::list<struct Space> selectedTiles;
 };
 
 #endif // SHISENSHO_H

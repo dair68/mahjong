@@ -272,9 +272,9 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
 
             //checking if the two selected tiles make a match
             if(game.getSelectedTiles().size() == 2) {
-                std::vector<struct Space> selected = game.getSelectedTiles();
-                struct Space space1 = selected[0];
-                struct Space space2 = selected[1];
+                std::list<struct Space> selected = game.getSelectedTiles();
+                struct Space space1 = selected.front();
+                struct Space space2 = selected.back();
                 std::vector<struct Space> path = game.findPath(space1, space2);
 
                 const Tile tile1 = *tiles[space1.col][space1.row];

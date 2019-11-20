@@ -6,12 +6,10 @@
 #include <cassert>
 #include <QDebug>
 
-Shisensho::Shisensho() {
+Shisensho::Shisensho() : cols(12), rows(5), selectedTiles() {
     //setting seed for random tiles
     srand(time(NULL));
 
-    cols = 12;
-    rows = 5;
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
     //creating empty grid
@@ -20,18 +18,14 @@ Shisensho::Shisensho() {
             tiles[i][j] = nullptr;
         }
     }
-
-    selectedTiles = std::vector<struct Space>();
 }
 
-Shisensho::Shisensho(const unsigned cols, const unsigned rows) {
+Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
+    : cols(numCols), rows(numRows), selectedTiles() {
     assert((cols * rows) % 2 == 0);
 
     //setting seed for random tiles
     srand(time(NULL));
-
-    this->cols = cols;
-    this->rows = rows;
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
     //creating empty grid
@@ -40,8 +34,19 @@ Shisensho::Shisensho(const unsigned cols, const unsigned rows) {
             tiles[i][j] = nullptr;
         }
     }
+}
 
-    selectedTiles = std::vector<struct Space>();
+Shisensho::Shisensho(const Shisensho& game) {
+   copy(game);
+}
+
+Shisensho& Shisensho::operator=(const Shisensho& game) {
+    //not self assignment
+    if(this != &game) {
+        copy(game);
+    }
+
+    return *this;
 }
 
 Shisensho::~Shisensho() {
@@ -172,18 +177,8 @@ unsigned Shisensho::getRows() const {
     return rows;
 }
 
-std::vector<struct Space> Shisensho::getSelectedTiles() const {
-    auto selected = std::vector<struct Space>(selectedTiles.size());
-
-    //copy pointers as const pointers
-    for(int i=0; i<selectedTiles.size(); i++) {
-        const int col = selectedTiles[i].col;
-        const int row = selectedTiles[i].row;
-        const struct Space space = {col, row};
-        selected[i] = space;
-    }
-
-    return selected;
+std::list<struct Space> Shisensho::getSelectedTiles() const {
+    return selectedTiles;
 }
 
 void Shisensho::markHovered(const struct Space& space) {
@@ -221,14 +216,11 @@ void Shisensho::deselectTile(const struct Space& space) {
     Tile& tile = *tiles[space.col][space.row];
     tile.deselect();
 
-    //tile is first selected tile
-    if(selectedTiles[0] == space) {
-        selectedTiles[0] = selectedTiles[1];
-        selectedTiles.pop_back();
-    }
-    //tile is second selected tile
-    else {
-        selectedTiles.pop_back();
+    auto iter = find(selectedTiles.begin(), selectedTiles.end(), space);
+
+    //found selected space and erasing
+    if(iter != selectedTiles.end()) {
+        selectedTiles.erase(iter);
     }
 }
 
@@ -450,20 +442,17 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
 
 void Shisensho::deselectTiles() {
     //deselecting each selected tile
-    for(int i=0; i<selectedTiles.size(); i++) {
-        struct Space selected = selectedTiles[i];
-        Tile& tile = *tiles[selected.col][selected.row];
+    for(struct Space space : selectedTiles) {
+        Tile& tile = *tiles[space.col][space.row];
         tile.deselect();
     }
-
     selectedTiles.clear();
 }
 
 void Shisensho::removeSelectedTiles() {
     //removing each selected tile
-    for(int i=0; i<selectedTiles.size(); i++) {
-        struct Space selected = selectedTiles[i];
-        removeTile(selected);
+    for(struct Space space : selectedTiles) {
+        removeTile(space);
     }
 
     selectedTiles.clear();
@@ -535,7 +524,7 @@ bool Shisensho::hasRemovableTiles() const {
                 else {
                     std::list<Space> tileSpaces;
                     tileSpaces.push_back(space);
-                    leftoverTiles[tile.getId()] = tileSpaces;
+                    leftoverTiles[id] = tileSpaces;
                 }
             }
         }
@@ -546,4 +535,36 @@ bool Shisensho::hasRemovableTiles() const {
 
 bool Shisensho::isOver() const {
     return !hasRemovableTiles();
+}
+
+void Shisensho::copy(const Shisensho& game) {
+    //deleting existing tiles
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            //found tile to delete
+            if(tiles[i][j] != nullptr) {
+                delete tiles[i][j];
+                tiles[i][j] = nullptr;
+            }
+        }
+    }
+
+    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
+
+    //copying over all tiles
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            //tile exists
+            if(game.tiles[i][j] != nullptr) {
+                Tile* tile = game.tiles[i][j];
+                tiles[i][j] = new Tile(*tile);
+            }
+            //tile does not exist
+            else {
+                tiles[i][j] = nullptr;
+            }
+        }
+    }
+
+    selectedTiles = game.selectedTiles;
 }
