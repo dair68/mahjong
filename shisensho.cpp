@@ -486,16 +486,16 @@ bool Shisensho::removableTiles(const struct Space& space1, const struct Space& s
 }
 
 bool Shisensho::hasRemovableTiles() const {
-    std::map<unsigned, std::list<Space>> leftoverTiles;
+    std::map<unsigned, std::list<struct Space>> leftoverTiles;
 
     //parsing tiles from grid
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
             //found a tile
             if(tiles[i][j] != nullptr) {
-                Tile tile = *tiles[i][j];
-                Space space = {i,j};
-                unsigned id = tile.getId();
+                Tile* tile = tiles[i][j];
+                struct Space space = {i,j};
+                unsigned id = tile->getId();
 
                 //grouping all seasons under id 7 in map
                 if(7 <= id && id <= 10) {
@@ -508,21 +508,22 @@ bool Shisensho::hasRemovableTiles() const {
 
                 auto iter = leftoverTiles.find(id);
 
-                //matching tile already found
+                //matching tile exists
                 if(iter != leftoverTiles.end()) {
-                    std::list<Space> matchingTiles = iter->second;
+                    std::list<struct Space>& matchingTiles = iter->second;
 
                     //searching for removable pair of tiles
-                    for(struct Space prevSpace : matchingTiles) {
+                    for(const struct Space& prevSpace : matchingTiles) {
                         //found removable tiles
                         if(removableTiles(space, prevSpace)) {
                             return true;
                         }
                     }
+                    matchingTiles.push_back(space);
                 }
                 //new tile found
                 else {
-                    std::list<Space> tileSpaces;
+                    std::list<struct Space> tileSpaces;
                     tileSpaces.push_back(space);
                     leftoverTiles[id] = tileSpaces;
                 }

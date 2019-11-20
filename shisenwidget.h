@@ -56,6 +56,9 @@ public:
 
     //event for clicking tiles
     void mousePressEvent(QMouseEvent* event) override;
+
+    //event for window state changing
+    void changeEvent(QEvent* event) override;
 public slots:
     //sets drawBackground to true
     void redrawBackground();

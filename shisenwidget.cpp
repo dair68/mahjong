@@ -297,6 +297,13 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
     }
 }
 
+void ShisenWidget::changeEvent(QEvent* event) {
+    //window activation change event
+    if(event->type() == QEvent::ActivationChange) {
+        redrawBackground();
+    }
+}
+
 void ShisenWidget::redrawBackground() {
     drawBackground = true;
     update();
