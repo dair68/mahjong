@@ -9,13 +9,10 @@
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
-ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
-    game = Shisensho();
-    drawBackground = true;
-    updatedSpace = {-1, -1};
-    hoveredSpace = {-1, -1};
-    path = std::vector<struct Space>();
+ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent),
+    game(), drawBackground(true), updatedSpace({-1,-1}), hoveredSpace({-1, -1}), path() {
 
+    //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setMinimumSize(800,600);
@@ -38,18 +35,14 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent) {
     layout->setAlignment(winLabel, Qt::AlignHCenter);
     setLayout(layout);
 
-    game.createTiles();
+    game.createWinnableTiles();
 }
 
-ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent) : QWidget(parent){
-    assert((cols * rows) % 2 == 0);
+ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent)
+    : QWidget(parent), game(cols, rows), drawBackground(true), updatedSpace({-1,-1})
+    , hoveredSpace({-1, -1}), path(){
 
-    game = Shisensho(cols, rows);
-    drawBackground = true;
-    updatedSpace = {-1, -1};
-    hoveredSpace = {-1, -1};
-    path = std::vector<struct Space>();
-
+    //setting attributes to improve painting
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setMinimumSize(800,600);
@@ -59,8 +52,7 @@ ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow*
     gridY = (height() - tileHeight*game.getRows())/2;
 
     winLabel = new QLabel("Game Over!", this);
-
-    game.createTiles();
+    game.createWinnableTiles();
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {

@@ -7,9 +7,6 @@
 #include <QDebug>
 
 Shisensho::Shisensho() : cols(12), rows(5), selectedTiles() {
-    //setting seed for random tiles
-    srand(time(NULL));
-
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
     //creating empty grid
@@ -24,8 +21,6 @@ Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
     : cols(numCols), rows(numRows), selectedTiles() {
     assert((cols * rows) % 2 == 0);
 
-    //setting seed for random tiles
-    srand(time(NULL));
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
     //creating empty grid
@@ -74,6 +69,157 @@ void Shisensho::clearTiles() {
     }
 }
 
+std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
+    std::map<unsigned, std::vector<struct Space>> tileMap;
+
+    //parsing tiles
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            //tile exists
+            if(tiles[i][j] != nullptr) {
+                Tile* tile = tiles[i][j];
+                unsigned id = tile->getId();
+                struct Space space = {i, j};
+
+                //all flower tiles assigned id of 7
+                if(7 <= id && id <= 10) {
+                    id = 7;
+                }
+                //all season tiles assigned id of 11
+                else if(11 <= id && id <= 14) {
+                    id = 11;
+                }
+
+                auto iter = tileMap.find(id);
+
+                //key found
+                if(iter != tileMap.end()) {
+                    std::vector<struct Space>& spaces = iter->second;
+                    spaces.push_back(space);
+                }
+                //key not found
+                else {
+                    std::vector<struct Space> spaces;
+                    spaces.push_back(space);
+                    tileMap[id] = spaces;
+                }
+            }
+        }
+    }
+
+    return tileMap;
+}
+
+
+bool Shisensho::isWinnable() const {
+    Shisensho copy = *this;
+
+    //searching for safely removable tiles
+    while(copy.hasRemovableTiles()) {
+        std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
+
+        //searching for pairs of removable tiles to do not affect game outcome
+        for(auto& [id, spaces] : tileMap) {
+            //only 2 of a given tile
+            if(spaces.size() == 2) {
+                struct Space space1 = spaces[0];
+                struct Space space2 = spaces[1];
+
+                //tiles removable; removing them
+                if(copy.removableTiles(space1, space2)) {
+                    copy.selectTile(space1);
+                    copy.selectTile(space2);
+                    copy.removeSelectedTiles();
+                }
+            }
+            //4 of a given tile
+            else {
+                std::vector<std::vector<unsigned>> partitionIndexes = {{0,1}, {0,2}, {0,3}};
+
+                //examining different pairs of spaces
+                for(std::vector<unsigned> indexes : partitionIndexes) {
+                   struct std::pair<std::vector<struct Space>, std::vector<struct Space>> spaceVects;
+                   spaceVects = partition(spaces, indexes);
+
+                   std::vector<struct Space> spacePair1 = spaceVects.first;
+                   struct Space spaceA = spacePair1[0];
+                   struct Space spaceB = spacePair1[1];
+
+                   std::vector<struct Space> spacePair2 = spaceVects.second;
+                   struct Space spaceC = spacePair2[0];
+                   struct Space spaceD = spacePair2[1];
+
+                   //possible to remove all 4 tiles
+                   if(copy.removableTiles(spaceA, spaceB) && copy.removableTiles(spaceC, spaceD)) {
+                       copy.selectTile(spaceA);
+                       copy.selectTile(spaceB);
+                       copy.removeSelectedTiles();
+
+                       copy.selectTile(spaceC);
+                       copy.selectTile(spaceD);
+                       copy.removeSelectedTiles();
+                   }
+                }
+            }
+        }
+    }
+
+    //no tiles left, game is winnable
+    if(!copy.tilesLeft()) {
+        return true;
+    }
+
+    std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
+
+    //searching for any pair of removable tiles, including those that might end game prematurely
+    for(auto& [id, spaces] : tileMap) {
+        //found 2 of a given tile
+        if(spaces.size() == 2) {
+            struct Space space1 = spaces[0];
+            struct Space space2 = spaces[1];
+
+            //removable tiles
+            if(copy.removableTiles(space1, space2)) {
+                Shisensho trialGame = copy;
+                trialGame.selectTile(space1);
+                trialGame.selectTile(space2);
+                trialGame.removeSelectedTiles();
+
+                //game is winnable
+                if(trialGame.isWinnable()) {
+                    return true;
+                }
+            }
+        }
+        //4 of a given tile
+        else {
+            //trying to remove different pairs of tiles
+            for(int a=0; a<spaces.size()-1; a++) {
+                for(int b=a+1; b<spaces.size(); b++) {
+                    struct Space space1 = spaces[a];
+                    struct Space space2 = spaces[b];
+
+                    //removable tiles
+                    if(copy.removableTiles(space1, space2)) {
+                        Shisensho trialGame = copy;
+                        trialGame.selectTile(space1);
+                        trialGame.selectTile(space2);
+                        trialGame.removeSelectedTiles();
+
+                        //game is winnable
+                        if(trialGame.isWinnable()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    return false;
+}
+
 void Shisensho::createTiles() {
     int tilePairs = (cols * rows) / 2;
     std::list<Tile> tileSet = createMahjongSet();
@@ -113,6 +259,15 @@ void Shisensho::createTiles() {
 
         pairs++;
     }
+}
+
+void Shisensho::createWinnableTiles() {
+   createTiles();
+
+   //randomly generating grids until winnable grid found
+   while(!isWinnable()) {
+       createTiles();
+   }
 }
 
 std::list<struct Space> Shisensho::getEmptySpaces() const {
@@ -536,6 +691,22 @@ bool Shisensho::hasRemovableTiles() const {
 
 bool Shisensho::isOver() const {
     return !hasRemovableTiles();
+}
+
+bool Shisensho::tilesLeft() const {
+    //searching for leftover tiles
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            Tile* tile = tiles[i][j];
+
+            //found tile
+            if(tile != nullptr) {
+                return true;
+            }
+        }
+    }
+
+    false;
 }
 
 void Shisensho::copy(const Shisensho& game) {

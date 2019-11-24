@@ -6,6 +6,8 @@
 #include "tile.h"
 #include "space.h"
 #include <iostream>
+#include <utility>
+#include <algorithm>
 
 class Shisensho {
 public:
@@ -30,8 +32,17 @@ public:
     //removes all the tiles in the grid
     void clearTiles();
 
-    //creates the game's tiles such that the game is winnable
+    //creates random grid of tiles. game might not be winnable
     void createTiles();
+
+    //creates map that maps tile id's to a vector of spaces where those tiles lie
+    std::map<unsigned, std::vector<struct Space>> getTileMap() const;
+
+    //checks if game is winnable
+    bool isWinnable() const;
+
+    //creates a grid of tiles such that the game is winnable
+    void createWinnableTiles();
 
     //returns array of all the empty spaces on grid
     std::list<struct Space> getEmptySpaces() const;
@@ -125,6 +136,9 @@ public:
 
     //checks if game over due to all tiles removed or no more moves available
     bool isOver() const;
+
+    //checks if there are any tiles left in grid
+    bool tilesLeft() const;
 private:
     //turns this object into a deep copy
     //@param game - shisensho game to copy
@@ -135,5 +149,35 @@ private:
     std::vector<std::vector<Tile*>> tiles;
     std::list<struct Space> selectedTiles;
 };
+
+//partitions vector into 2 based on a set of indexes
+//@param vect - vector to partition
+//@param indexes - a vector containing the indexes of all elements to add to vector1
+//returns a pair of vectors, with 1st vector containing all elements indicated by indexes
+template <typename T>
+struct std::pair<std::vector<T>, std::vector<T>> partition(
+        const std::vector<T>& vect,
+        const std::vector<unsigned>& indexes
+    ) {
+    std::vector<T> v1;
+    std::vector<T> v2;
+
+    //partitioning elements
+    for(int i=0; i<vect.size(); i++) {
+        T element = vect[i];
+        auto iter = find(indexes.begin(), indexes.end(), i);
+
+        //i contained in indexes; adding to v1
+        if(iter != indexes.end()) {
+            v1.push_back(element);
+        }
+        //i not contained in indexes; adding to v2
+        else {
+            v2.push_back(element);
+        }
+    }
+
+    return std::make_pair(v1, v2);
+}
 
 #endif // SHISENSHO_H

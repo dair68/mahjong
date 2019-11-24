@@ -7,6 +7,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    //setting seed for random tiles
+    srand(time(0));
+
     //title screen
 //    MainWindow w;
 //    w.show();
