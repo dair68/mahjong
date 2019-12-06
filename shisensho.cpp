@@ -38,6 +38,7 @@ Shisensho::Shisensho(const Shisensho& game) {
 Shisensho& Shisensho::operator=(const Shisensho& game) {
     //not self assignment
     if(this != &game) {
+        clearTiles();
         copy(game);
     }
 
@@ -45,25 +46,33 @@ Shisensho& Shisensho::operator=(const Shisensho& game) {
 }
 
 Shisensho::~Shisensho() {
-    //deleting tiles
+    clearTiles();
+}
+
+unsigned Shisensho::numTiles() const {
+    unsigned numTiles = 0;
+
+    //counting tiles
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
             //tile exists
             if(tiles[i][j] != nullptr) {
-                delete  tiles[i][j];
-                tiles[i][j] = nullptr;
+                numTiles++;
             }
         }
     }
+
+    return numTiles;
 }
 
 void Shisensho::clearTiles() {
     //removing every tile in grid
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            struct Space space = {i,j};
-            if(!spaceEmpty(space)) {
-                removeTile(space);
+          //tile to delete
+            if(tiles[i][j] != nullptr) {
+                delete tiles[i][j];
+                tiles[i][j] = nullptr;
             }
         }
     }
@@ -80,6 +89,7 @@ std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
                 Tile* tile = tiles[i][j];
                 unsigned id = tile->getId();
                 struct Space space = {i, j};
+                assert(tiles[space.col][space.row]);
 
                 //all flower tiles assigned id of 7
                 if(7 <= id && id <= 10) {
@@ -112,28 +122,35 @@ std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
 
 
 bool Shisensho::isWinnable() const {
+    qDebug() << "checking";
     Shisensho copy = *this;
+    unsigned numTiles = copy.numTiles();
 
     //searching for safely removable tiles
     while(copy.hasRemovableTiles()) {
+        qDebug() << "pruning";
+        qDebug() << numTiles << "tiles left";
         std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
 
         //searching for pairs of removable tiles to do not affect game outcome
         for(auto& [id, spaces] : tileMap) {
+            //qDebug() << "checking tiles " << id;
+
             //only 2 of a given tile
             if(spaces.size() == 2) {
+                //qDebug() << spaces.size();
                 struct Space space1 = spaces[0];
                 struct Space space2 = spaces[1];
 
                 //tiles removable; removing them
                 if(copy.removableTiles(space1, space2)) {
-                    copy.selectTile(space1);
-                    copy.selectTile(space2);
-                    copy.removeSelectedTiles();
+                    copy.removeTile(space1);
+                    copy.removeTile(space2);
                 }
             }
             //4 of a given tile
             else {
+                //qDebug() << spaces.size();
                 std::vector<std::vector<unsigned>> partitionIndexes = {{0,1}, {0,2}, {0,3}};
 
                 //examining different pairs of spaces
@@ -143,6 +160,7 @@ bool Shisensho::isWinnable() const {
 
                    std::vector<struct Space> spacePair1 = spaceVects.first;
                    struct Space spaceA = spacePair1[0];
+                   //qDebug() << tiles[spaceA.col][spaceA.row]->getId();
                    struct Space spaceB = spacePair1[1];
 
                    std::vector<struct Space> spacePair2 = spaceVects.second;
@@ -151,16 +169,24 @@ bool Shisensho::isWinnable() const {
 
                    //possible to remove all 4 tiles
                    if(copy.removableTiles(spaceA, spaceB) && copy.removableTiles(spaceC, spaceD)) {
-                       copy.selectTile(spaceA);
-                       copy.selectTile(spaceB);
-                       copy.removeSelectedTiles();
-
-                       copy.selectTile(spaceC);
-                       copy.selectTile(spaceD);
-                       copy.removeSelectedTiles();
+                      //removing all 4 tiles
+                       for(struct Space space : spaces) {
+                           copy.removeTile(space);
+                       }
+                       break;
                    }
                 }
             }
+        }
+
+        //qDebug() << copy.numTiles() << numTiles;
+        //no more tiles to prune
+        if(copy.numTiles() == numTiles) {
+            break;
+        }
+        //tiles pruned
+        else {
+            numTiles = copy.numTiles();
         }
     }
 
@@ -173,47 +199,25 @@ bool Shisensho::isWinnable() const {
 
     //searching for any pair of removable tiles, including those that might end game prematurely
     for(auto& [id, spaces] : tileMap) {
-        //found 2 of a given tile
-        if(spaces.size() == 2) {
-            struct Space space1 = spaces[0];
-            struct Space space2 = spaces[1];
+        //trying to remove different pairs of tiles
+        for(int a=0; a<spaces.size()-1; a++) {
+            for(int b=a+1; b<spaces.size(); b++) {
+                struct Space space1 = spaces[a];
+                struct Space space2 = spaces[b];
 
-            //removable tiles
-            if(copy.removableTiles(space1, space2)) {
-                Shisensho trialGame = copy;
-                trialGame.selectTile(space1);
-                trialGame.selectTile(space2);
-                trialGame.removeSelectedTiles();
+                //removable tiles
+                if(copy.removableTiles(space1, space2)) {
+                    qDebug() << "guess";
+                    Shisensho trialGame = copy;
+                    trialGame.removeTile(space1);
+                    trialGame.removeTile(space2);
 
-                //game is winnable
-                if(trialGame.isWinnable()) {
-                    return true;
-                }
-            }
-        }
-        //4 of a given tile
-        else {
-            //trying to remove different pairs of tiles
-            for(int a=0; a<spaces.size()-1; a++) {
-                for(int b=a+1; b<spaces.size(); b++) {
-                    struct Space space1 = spaces[a];
-                    struct Space space2 = spaces[b];
-
-                    //removable tiles
-                    if(copy.removableTiles(space1, space2)) {
-                        Shisensho trialGame = copy;
-                        trialGame.selectTile(space1);
-                        trialGame.selectTile(space2);
-                        trialGame.removeSelectedTiles();
-
-                        //game is winnable
-                        if(trialGame.isWinnable()) {
-                            return true;
-                        }
+                    //game is winnable
+                    if(trialGame.isWinnable()) {
+                        return true;
                     }
                 }
             }
-
         }
     }
 
@@ -221,6 +225,7 @@ bool Shisensho::isWinnable() const {
 }
 
 void Shisensho::createTiles() {
+    qDebug() << "creating tiles";
     int tilePairs = (cols * rows) / 2;
     std::list<Tile> tileSet = createMahjongSet();
     int pairs = 0;
@@ -266,8 +271,11 @@ void Shisensho::createWinnableTiles() {
 
    //randomly generating grids until winnable grid found
    while(!isWinnable()) {
+       clearTiles();
        createTiles();
    }
+   qDebug() << "done";
+   emit gameInitialized();
 }
 
 std::list<struct Space> Shisensho::getEmptySpaces() const {
@@ -390,14 +398,10 @@ bool Shisensho::spaceEmpty(const struct Space& space) const {
 
 
 void Shisensho::removeTile(const struct Space& space) {
-    assert(gridContainsSpace(space));
     assert(tiles[space.col][space.row] != nullptr);
 
-    //checking for valid space
-    if(!spaceEmpty(space)) {
-        delete tiles[space.col][space.row];
-        tiles[space.col][space.row] = nullptr;
-    }
+    delete tiles[space.col][space.row];
+    tiles[space.col][space.row] = nullptr;
 }
 
 bool Shisensho::gridContainsSpace(const struct Space& space) const {
@@ -512,7 +516,7 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
     if(col1 == col2) {
         //spaces are simply connected, path found
         if(simplePath(space1, space2)) {
-            qDebug() << "simple path";
+            //qDebug() << "simple path";
             path = {space1, space2};
             return path;
         }
@@ -641,6 +645,7 @@ bool Shisensho::removableTiles(const struct Space& space1, const struct Space& s
 }
 
 bool Shisensho::hasRemovableTiles() const {
+    //qDebug() << "removable tiles?";
     std::map<unsigned, std::list<struct Space>> leftoverTiles;
 
     //parsing tiles from grid
@@ -701,26 +706,19 @@ bool Shisensho::tilesLeft() const {
 
             //found tile
             if(tile != nullptr) {
+                qDebug() << "still tiles";
                 return true;
             }
         }
     }
 
-    false;
+    qDebug() << "no more tiles!";
+    return false;
 }
 
 void Shisensho::copy(const Shisensho& game) {
-    //deleting existing tiles
-    for(int i=0; i<cols; i++) {
-        for(int j=0; j<rows; j++) {
-            //found tile to delete
-            if(tiles[i][j] != nullptr) {
-                delete tiles[i][j];
-                tiles[i][j] = nullptr;
-            }
-        }
-    }
-
+    cols = game.cols;
+    rows = game.rows;
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
     //copying over all tiles
@@ -728,8 +726,8 @@ void Shisensho::copy(const Shisensho& game) {
         for(int j=0; j<rows; j++) {
             //tile exists
             if(game.tiles[i][j] != nullptr) {
-                Tile* tile = game.tiles[i][j];
-                tiles[i][j] = new Tile(*tile);
+                Tile tile = *(game.tiles[i][j]);
+                tiles[i][j] = new Tile(tile);
             }
             //tile does not exist
             else {

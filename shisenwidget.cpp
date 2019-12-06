@@ -5,21 +5,20 @@
 #include <QDebug>
 #include <QTimer>
 #include <QHBoxLayout>
+#include <QInputDialog>
+#include <sstream>
 
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
-ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent),
-    game(), drawBackground(true), updatedSpace({-1,-1}), hoveredSpace({-1, -1}), path() {
+ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), gameStarted(false),
+    drawBackground(false), updatedSpace({-1,-1}), hoveredSpace({-1, -1}), path() {
 
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setMinimumSize(800,600);
     setMouseTracking(true);
-
-    gridX = (width() - tileWidth*game.getCols())/2;
-    gridY = (height() - tileHeight*game.getRows())/2;
 
     winLabel = new QLabel("Game Over", this);
     winLabel->setStyleSheet("color: maroon;"
@@ -35,24 +34,38 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent),
     layout->setAlignment(winLabel, Qt::AlignHCenter);
     setLayout(layout);
 
-    game.createWinnableTiles();
+    QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::tilesFinished);
 }
 
-ShisenWidget::ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent)
-    : QWidget(parent), game(cols, rows), drawBackground(true), updatedSpace({-1,-1})
-    , hoveredSpace({-1, -1}), path(){
+void ShisenWidget::startGame() {
+    //getting game dimensions
+    bool ok;
+    QStringList options = {"Small (12x5)", "Medium (14x6)", "Large (18x8)"};
+    QString gameDim = QInputDialog::getItem(this, "Game select", "Select game dimensions:",
+                                                options, 0, false, &ok);
 
-    //setting attributes to improve painting
-    setAttribute(Qt::WA_StaticContents);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setMinimumSize(800,600);
-    setMouseTracking(true);
+    qDebug() << gameDim;
 
-    gridX = (width() - tileWidth*game.getCols())/2;
-    gridY = (height() - tileHeight*game.getRows())/2;
+    if (ok) {
+        QStringList optionParts = gameDim.split(' ');
+        QString dim = optionParts[1];
+        qDebug() << dim;
+        dim.chop(1);
+        dim.remove(0, 1);
 
-    winLabel = new QLabel("Game Over!", this);
-    game.createWinnableTiles();
+        QStringList dimensionChunks = dim.split('x');
+        qDebug() << dimensionChunks;
+        unsigned cols = dimensionChunks[0].toInt();
+        unsigned rows = dimensionChunks[1].toInt();
+        qDebug() << cols << rows;
+
+        game = Shisensho(cols, rows);
+        gridX = (width() - tileWidth*game.getCols())/2;
+        gridY = (height() - tileHeight*game.getRows())/2;
+
+        qDebug() << "dimensions: " << game.getCols() << game.getRows();
+        game.createWinnableTiles();
+    }
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
@@ -291,12 +304,20 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
 
 void ShisenWidget::changeEvent(QEvent* event) {
     //window activation change event
-    if(event->type() == QEvent::ActivationChange) {
+    if(event->type() == QEvent::ActivationChange && gameStarted) {
+        qDebug() << "change";
         redrawBackground();
     }
 }
 
 void ShisenWidget::redrawBackground() {
+    qDebug() << "redrawing";
     drawBackground = true;
     update();
+}
+
+void ShisenWidget::tilesFinished() {
+    qDebug() << "finished making tiles";
+    gameStarted = true;
+    redrawBackground();
 }

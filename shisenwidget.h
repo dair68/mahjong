@@ -10,15 +10,12 @@
 class ShisenWidget : public QWidget {
     Q_OBJECT
 public:
-    //creates shisensho screen with game of custom size
+    //creates shisensho screen
     //@param parent - a parent MainWindow. nullptr by default
     ShisenWidget(MainWindow* parent=nullptr);
 
-    //creates shisensho screen with game of custom size
-    //@param cols - number of columns in game. total number of tiles must be even
-    //@param rows - number of rows in game. total number of tiles must be even
-    //@param parent - a parent MainWindow. nullptr by default
-    ShisenWidget(const unsigned cols, const unsigned rows, MainWindow* parent=nullptr);
+    //asks player for a game of custom size, then starts game
+    void startGame();
 
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;
@@ -62,8 +59,12 @@ public:
 public slots:
     //sets drawBackground to true
     void redrawBackground();
+
+    //prints that game has been initialized to console
+    void tilesFinished();
 private:
     Shisensho game;
+    bool gameStarted;
     bool drawBackground;
     struct Space updatedSpace;
     struct Space hoveredSpace;

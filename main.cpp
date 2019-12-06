@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
     //shisensho screen
     ShisenWidget shisenWin;
     shisenWin.show();
+    shisenWin.startGame();
 
     return a.exec();
 }

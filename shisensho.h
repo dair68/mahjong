@@ -2,6 +2,7 @@
 #define SHISENSHO_H
 
 #include <QWidget>
+#include <QObject>
 #include "mainwindow.h"
 #include "tile.h"
 #include "space.h"
@@ -9,9 +10,10 @@
 #include <utility>
 #include <algorithm>
 
-class Shisensho {
+class Shisensho : public QObject {
+    Q_OBJECT
 public:
-    //creates 12 x 5 shisensho game
+    //creates shisensho game widget
     Shisensho();
 
     //creates game of custom size. must contain even number of tiles
@@ -28,6 +30,9 @@ public:
 
     //destructor
     ~Shisensho();
+
+    //returns number of tiles currently on the field
+    unsigned numTiles() const;
 
     //removes all the tiles in the grid
     void clearTiles();
@@ -139,6 +144,9 @@ public:
 
     //checks if there are any tiles left in grid
     bool tilesLeft() const;
+
+signals:
+    void gameInitialized();
 private:
     //turns this object into a deep copy
     //@param game - shisensho game to copy
