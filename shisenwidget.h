@@ -17,6 +17,12 @@ public:
     //asks player for a game of custom size, then starts game
     void startGame();
 
+    //shows game over dialog and acts accordingly
+    void endGame();
+
+    //resets widget fields
+    void reset();
+
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;
 
@@ -56,12 +62,17 @@ public:
 
     //event for window state changing
     void changeEvent(QEvent* event) override;
+
 public slots:
     //sets drawBackground to true
     void redrawBackground();
 
-    //prints that game has been initialized to console
-    void tilesFinished();
+    //starts the paint events
+    void startPainting();
+
+    //checks if the game is over and ends things accordingly if so
+    void checkGameStatus();
+
 private:
     Shisensho game;
     bool gameStarted;
@@ -73,7 +84,6 @@ private:
     int gridY;
     static unsigned tileWidth;
     static unsigned tileHeight;
-    QLabel* winLabel;
 };
 
 #endif // SHISENWIDGET_H

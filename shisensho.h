@@ -146,6 +146,7 @@ public:
     bool tilesLeft() const;
 
 signals:
+    //emit when the object has initialized all the tiles
     void gameInitialized();
 private:
     //turns this object into a deep copy

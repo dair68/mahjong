@@ -645,47 +645,19 @@ bool Shisensho::removableTiles(const struct Space& space1, const struct Space& s
 }
 
 bool Shisensho::hasRemovableTiles() const {
-    //qDebug() << "removable tiles?";
-    std::map<unsigned, std::list<struct Space>> leftoverTiles;
+    std::map<unsigned, std::vector<struct Space>> tileMap = getTileMap();
 
-    //parsing tiles from grid
-    for(int i=0; i<cols; i++) {
-        for(int j=0; j<rows; j++) {
-            //found a tile
-            if(tiles[i][j] != nullptr) {
-                Tile* tile = tiles[i][j];
-                struct Space space = {i,j};
-                unsigned id = tile->getId();
+    //examining tiles by suit
+    for(auto& [id, spaces] : tileMap) {
+        //trying to remove different pairs of tiles
+        for(int a=0; a<spaces.size()-1; a++) {
+            for(int b=a+1; b<spaces.size(); b++) {
+                struct Space space1 = spaces[a];
+                struct Space space2 = spaces[b];
 
-                //grouping all seasons under id 7 in map
-                if(7 <= id && id <= 10) {
-                    id = 7;
-                }
-                //grouping all flowers under id 11 in map
-                else if(11 <= id && id <= 14) {
-                    id = 11;
-                }
-
-                auto iter = leftoverTiles.find(id);
-
-                //matching tile exists
-                if(iter != leftoverTiles.end()) {
-                    std::list<struct Space>& matchingTiles = iter->second;
-
-                    //searching for removable pair of tiles
-                    for(const struct Space& prevSpace : matchingTiles) {
-                        //found removable tiles
-                        if(removableTiles(space, prevSpace)) {
-                            return true;
-                        }
-                    }
-                    matchingTiles.push_back(space);
-                }
-                //new tile found
-                else {
-                    std::list<struct Space> tileSpaces;
-                    tileSpaces.push_back(space);
-                    leftoverTiles[id] = tileSpaces;
+                //removable tiles
+                if(removableTiles(space1, space2)) {
+                   return true;
                 }
             }
         }
@@ -706,7 +678,7 @@ bool Shisensho::tilesLeft() const {
 
             //found tile
             if(tile != nullptr) {
-                qDebug() << "still tiles";
+                //qDebug() << "still tiles";
                 return true;
             }
         }

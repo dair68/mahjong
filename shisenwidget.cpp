@@ -7,6 +7,9 @@
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <sstream>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QApplication>
 
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
@@ -17,24 +20,10 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), gameSt
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
     setAttribute(Qt::WA_OpaquePaintEvent);
-    setMinimumSize(800,600);
+    setMinimumSize(1200,800);
     setMouseTracking(true);
 
-    winLabel = new QLabel("Game Over", this);
-    winLabel->setStyleSheet("color: maroon;"
-                            "background-color: rgba(255, 255, 255, 70%);"
-                            "font: 50px Arial;");
-    winLabel->setAlignment(Qt::AlignCenter);
-    winLabel->setMinimumSize(width() * .4, height() * .3);
-    winLabel->setMaximumSize(width() * .8, height() * .5);
-    winLabel->hide();
-
-    QLayout* layout = new QVBoxLayout();
-    layout->addWidget(winLabel);
-    layout->setAlignment(winLabel, Qt::AlignHCenter);
-    setLayout(layout);
-
-    QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::tilesFinished);
+    QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
 }
 
 void ShisenWidget::startGame() {
@@ -66,6 +55,55 @@ void ShisenWidget::startGame() {
         qDebug() << "dimensions: " << game.getCols() << game.getRows();
         game.createWinnableTiles();
     }
+}
+
+void ShisenWidget::endGame() {
+    QMessageBox gameOverBox;
+    QString message = game.tilesLeft() ? "Game Over" : "Congratulations. You won!";
+    gameOverBox.setText(message);
+
+    QPushButton* retry = nullptr;
+
+    //game lost
+    if(game.tilesLeft()) {
+        retry = gameOverBox.addButton("Try Again", QMessageBox::YesRole);
+    }
+
+    QPushButton* newGame = gameOverBox.addButton("New Game", QMessageBox::YesRole);
+    QPushButton* quit = gameOverBox.addButton("Quit", QMessageBox::NoRole);
+    gameOverBox.exec();
+
+    //new game clicked
+    if(gameOverBox.clickedButton() == newGame) {
+        qDebug() << "New Game";
+        reset();
+        startGame();
+    }
+    //quitting
+    else {
+        qDebug() << "Quit";
+        QApplication::quit();
+    }
+}
+
+void ShisenWidget::checkGameStatus() {
+    //checking if game over
+    if(gameStarted && game.isOver()) {
+        qDebug() << "ending game";
+        gameStarted = false;
+        endGame();
+    }
+}
+
+void ShisenWidget::reset() {
+    game.clearTiles();
+    gameStarted = false;
+    drawBackground = false;
+    updatedSpace = {-1, -1};
+    hoveredSpace = {-1, -1};
+    path.clear();
+    gridX = 0;
+    gridY = 0;
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
@@ -102,6 +140,10 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
         QBrush brush = QBrush(Qt::darkGreen);
         painter.fillRect(0, 0, width(), height(), brush);
         drawTiles(painter);
+
+        //delaying to allow painting to catch up, then checking if the game is over
+        int milliseconds = 100;
+        QTimer::singleShot(milliseconds, this, SLOT(checkGameStatus()));
         drawBackground = false;
     }
 }
@@ -132,10 +174,7 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
         }
     }
 
-    //game over
-    if(game.isOver()) {
-        winLabel->show();
-    }
+    qDebug() << "tiles redrawn";
 }
 
 void ShisenWidget::drawPath(QPainter& painter) const {
@@ -316,7 +355,7 @@ void ShisenWidget::redrawBackground() {
     update();
 }
 
-void ShisenWidget::tilesFinished() {
+void ShisenWidget::startPainting() {
     qDebug() << "finished making tiles";
     gameStarted = true;
     redrawBackground();
