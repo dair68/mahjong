@@ -15,6 +15,8 @@ Shisensho::Shisensho() : cols(12), rows(5), selectedTiles() {
             tiles[i][j] = nullptr;
         }
     }
+
+    tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
 Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
@@ -29,6 +31,8 @@ Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
             tiles[i][j] = nullptr;
         }
     }
+
+    tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
 Shisensho::Shisensho(const Shisensho& game) {
@@ -266,6 +270,24 @@ void Shisensho::createTiles() {
     }
 }
 
+void Shisensho::resetTiles() {
+    //resetting tiles based on tileIds recorded earlier
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            unsigned id = tileIds[i][j];
+
+            //id is 42, creating empty tile
+            if(id == 42) {
+                tiles[i][j] = nullptr;
+            }
+            //creating tile based on id
+            else {
+                tiles[i][j] = new Tile(id);
+            }
+        }
+    }
+}
+
 void Shisensho::createWinnableTiles() {
    createTiles();
 
@@ -274,6 +296,16 @@ void Shisensho::createWinnableTiles() {
        clearTiles();
        createTiles();
    }
+
+   //updating tile ids
+   for(int i=0; i<cols; i++) {
+       for(int j=0; j<rows; j++) {
+           Tile tile = * tiles[i][j];
+           unsigned id = tile.getId();
+           tileIds[i][j] = id;
+       }
+   }
+
    qDebug() << "done";
    emit gameInitialized();
 }
@@ -315,7 +347,7 @@ std::vector<struct Space> Shisensho::getTileSpaces() const {
 std::vector<std::vector<const Tile*>> Shisensho::getTiles() const {
     auto tilesCopy = std::vector<std::vector<const Tile*>>(cols, std::vector<const Tile*>(rows));
 
-    //creating defensive copy
+    //creating pointers to tiles
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
             //space contains a tile
@@ -330,6 +362,10 @@ std::vector<std::vector<const Tile*>> Shisensho::getTiles() const {
     }
 
    return tilesCopy;
+}
+
+std::vector<std::vector<unsigned>> Shisensho::getTileIds() const {
+    return tileIds;
 }
 
 unsigned Shisensho::getCols() const {
@@ -709,4 +745,5 @@ void Shisensho::copy(const Shisensho& game) {
     }
 
     selectedTiles = game.selectedTiles;
+    tileIds = game.tileIds;
 }

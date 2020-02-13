@@ -40,6 +40,9 @@ public:
     //creates random grid of tiles. game might not be winnable
     void createTiles();
 
+    //resets all tiles to how they were at the beginning of game. if no games played yet, creates empty tiles
+    void resetTiles();
+
     //creates map that maps tile id's to a vector of spaces where those tiles lie
     std::map<unsigned, std::vector<struct Space>> getTileMap() const;
 
@@ -57,6 +60,9 @@ public:
 
     //returns the array of tiles
     std::vector<std::vector<const Tile*>> getTiles() const;
+
+    //returns array of tile ids at start of the game
+    std::vector<std::vector<unsigned>> getTileIds() const;
 
     //returns number of columns
     unsigned getCols() const;
@@ -156,6 +162,7 @@ private:
     unsigned cols;
     unsigned rows;
     std::vector<std::vector<Tile*>> tiles;
+    std::vector<std::vector<unsigned>> tileIds;
     std::list<struct Space> selectedTiles;
 };
 

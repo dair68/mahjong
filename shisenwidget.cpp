@@ -79,6 +79,13 @@ void ShisenWidget::endGame() {
         reset();
         startGame();
     }
+    //try again clicked
+    else if(gameOverBox.clickedButton() == retry) {
+        qDebug() << "Resetting tiles";
+        reset();
+        game.resetTiles();
+        startPainting();
+    }
     //quitting
     else {
         qDebug() << "Quit";
@@ -102,8 +109,6 @@ void ShisenWidget::reset() {
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
     path.clear();
-    gridX = 0;
-    gridY = 0;
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
