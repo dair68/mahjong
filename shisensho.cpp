@@ -1,5 +1,8 @@
 #include "shisensho.h"
 #include "space.h"
+#include <fstream>
+#include <QFile>
+#include <QDir>
 #include <vector>
 #include <QPainter>
 #include <ctime>
@@ -308,6 +311,42 @@ void Shisensho::createWinnableTiles() {
 
    qDebug() << "done";
    emit gameInitialized();
+}
+
+void Shisensho::writeToFile(const QString& filename) const {
+    qDebug() << "writing to txt";
+
+    QString filePath = QDir::currentPath() + "/" + filename;
+    qDebug() << filePath;
+    QFile file(filePath);
+
+    //checking that file opened correctly
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+           return;
+    }
+
+    QTextStream out(&file);
+    out << "[";
+    //writing game tiles to file
+    for(int i=0; i<cols; i++) {
+        out << "[";
+        for(int j=0; j<rows; j++) {
+            Tile* tile = tiles[i][j];
+            unsigned id = (tile == nullptr) ? 42 : tile->getId();
+            out << id;
+            //adding comma if needed
+            if(j+1 != rows) {
+                out << ",";
+            }
+        }
+        out << "]";
+        //adding comma if needed
+        if(i+1 != cols) {
+            out << ",";
+        }
+    }
+    out << "]\n";
+    qDebug() << "done writing";
 }
 
 std::list<struct Space> Shisensho::getEmptySpaces() const {

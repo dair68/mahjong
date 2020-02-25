@@ -15,9 +15,14 @@ int main(int argc, char *argv[])
 //    w.show();
 
     //shisensho screen
-    ShisenWidget shisenWin;
-    shisenWin.show();
-    shisenWin.startGame();
+//    ShisenWidget shisenWin;
+//    shisenWin.show();
+//    shisenWin.startGame();
+
+    //generating and saving random shisensho games
+    Shisensho game (12, 5);
+    game.createWinnableTiles();
+    game.writeToFile("test.txt");
 
     return a.exec();
 }

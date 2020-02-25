@@ -49,6 +49,12 @@ public:
     //checks if game is winnable
     bool isWinnable() const;
 
+    //stores the current tile locations inside a .txt file.
+    //file will have string appended to it. string represents array of arrays with outer array being cols, inner array being
+    //row values with each value being an integer representing tile id. arrays denoted by [ ,...]. empty tiles have id 42.
+    //@param filename - name of txt file to store game
+    void writeToFile(const QString& filename) const;
+
     //creates a grid of tiles such that the game is winnable
     void createWinnableTiles();
 
