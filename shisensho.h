@@ -49,11 +49,13 @@ public:
     //checks if game is winnable
     bool isWinnable() const;
 
-    //stores the current tile locations inside a .txt file.
-    //file will have string appended to it. string represents array of arrays with outer array being cols, inner array being
-    //row values with each value being an integer representing tile id. arrays denoted by [ ,...]. empty tiles have id 42.
+    //stores the current tile locations inside a .txt file. file will have string appended to it.
     //@param filename - name of txt file to store game
     void writeToFile(const QString& filename) const;
+
+    //returns string representation of current grid. array of arrays with outer array being cols, inner array being rows.
+    //arrays contains integers representing tile ids with 42 meaning empty space.
+    QString gridStatusString() const;
 
     //creates a grid of tiles such that the game is winnable
     void createWinnableTiles();
@@ -201,5 +203,11 @@ struct std::pair<std::vector<T>, std::vector<T>> partition(
 
     return std::make_pair(v1, v2);
 }
+
+//generates and appends random shisensho games inside .txt file
+//@param numGames - number of games to generate
+//@param filename - name of .txt file to store data
+//@param gameSize - string of the form "small", "medium", or "large" indicating game size. "small" by default
+void generateShisenshoGames(const unsigned numGames, const QString& filename, const QString& gameSize);
 
 #endif // SHISENSHO_H

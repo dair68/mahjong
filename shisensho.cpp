@@ -129,14 +129,14 @@ std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
 
 
 bool Shisensho::isWinnable() const {
-    qDebug() << "checking";
+    //qDebug() << "checking";
     Shisensho copy = *this;
     unsigned numTiles = copy.numTiles();
 
     //searching for safely removable tiles
     while(copy.hasRemovableTiles()) {
-        qDebug() << "pruning";
-        qDebug() << numTiles << "tiles left";
+        //qDebug() << "pruning";
+        //qDebug() << numTiles << "tiles left";
         std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
 
         //searching for pairs of removable tiles to do not affect game outcome
@@ -214,7 +214,7 @@ bool Shisensho::isWinnable() const {
 
                 //removable tiles
                 if(copy.removableTiles(space1, space2)) {
-                    qDebug() << "guess";
+                    //qDebug() << "guess";
                     Shisensho trialGame = copy;
                     trialGame.removeTile(space1);
                     trialGame.removeTile(space2);
@@ -309,44 +309,53 @@ void Shisensho::createWinnableTiles() {
        }
    }
 
-   qDebug() << "done";
+   //qDebug() << "done";
    emit gameInitialized();
 }
 
 void Shisensho::writeToFile(const QString& filename) const {
-    qDebug() << "writing to txt";
-
     QString filePath = QDir::currentPath() + "/" + filename;
     qDebug() << filePath;
     QFile file(filePath);
 
     //checking that file opened correctly
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        qDebug() << "can't open file";
            return;
     }
 
     QTextStream out(&file);
-    out << "[";
-    //writing game tiles to file
+    QString gridString = gridStatusString();
+    qDebug() << gridString;
+    out << gridString << "\n";
+    qDebug() << "done writing";
+    file.close();
+}
+
+QString Shisensho::gridStatusString() const {
+    QString statusString = "[";
+
+    //adding game tiles to string
     for(int i=0; i<cols; i++) {
-        out << "[";
+        statusString += "[";
         for(int j=0; j<rows; j++) {
             Tile* tile = tiles[i][j];
             unsigned id = (tile == nullptr) ? 42 : tile->getId();
-            out << id;
+            statusString += QString::number(id);
             //adding comma if needed
             if(j+1 != rows) {
-                out << ",";
+                statusString += ",";
             }
         }
-        out << "]";
+        statusString += "]";
         //adding comma if needed
         if(i+1 != cols) {
-            out << ",";
+            statusString += ",";
         }
     }
-    out << "]\n";
-    qDebug() << "done writing";
+    statusString += "]";
+
+    return statusString;
 }
 
 std::list<struct Space> Shisensho::getEmptySpaces() const {
@@ -785,4 +794,67 @@ void Shisensho::copy(const Shisensho& game) {
 
     selectedTiles = game.selectedTiles;
     tileIds = game.tileIds;
+}
+
+void generateShisenshoGames(const unsigned numGames, const QString& filename, const QString& gameSize = "small") {
+    QSet<QString> levels;
+
+    QString filepath = QDir::currentPath() + "/" + filename;
+    QFile file (filepath);
+
+    //checking that file opened correctly
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "can't open file";
+        return;
+    }
+
+    //reading levels from file
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        levels.insert(line);
+    }
+
+    //displaying current levels
+    QSet<QString>::const_iterator i = levels.constBegin();
+    while (i != levels.constEnd()) {
+        qDebug() << *i;
+        ++i;
+    }
+
+    file.close();
+
+    Shisensho game;
+
+    //small, 12x5 game
+    if(gameSize == "small") {
+        game = Shisensho(12, 5);
+    }
+    //medium, 14x6 game
+    else if(gameSize == "medium") {
+        game = Shisensho(14, 6);
+    }
+    //large, 18x8 game
+    else if(gameSize == "large") {
+        game = Shisensho(18, 8);
+    }
+    //invalid size
+    else {
+        qDebug() << "invalid game size";
+        return;
+    }
+
+    for(int i=0; i<numGames; i++) {
+        game.createWinnableTiles();
+        QString levelData = game.gridStatusString();
+
+        //refreshing game if duplicate level already stored
+        while(levels.contains(levelData)) {
+            game.clearTiles();
+            game.createWinnableTiles();
+            levelData = game.gridStatusString();
+        }
+        game.writeToFile(filename);
+        game.clearTiles();
+    }
 }
