@@ -49,10 +49,6 @@ public:
     //checks if game is winnable
     bool isWinnable() const;
 
-    //stores the current tile locations inside a .txt file. file will have string appended to it.
-    //@param filename - name of txt file to store game
-    void writeToFile(const QString& filename) const;
-
     //returns string representation of current grid. array of arrays with outer array being cols, inner array being rows.
     //arrays contains integers representing tile ids with 42 meaning empty space.
     QString gridStatusString() const;
@@ -203,6 +199,11 @@ struct std::pair<std::vector<T>, std::vector<T>> partition(
 
     return std::make_pair(v1, v2);
 }
+
+//appends a string to a file
+//@param data - a string that will be appended
+//@param filename - name of txt file append to
+void writeToFile(const QString& data, const QString& filename);
 
 //generates and appends random shisensho games inside .txt file
 //@param numGames - number of games to generate

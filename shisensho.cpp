@@ -313,49 +313,26 @@ void Shisensho::createWinnableTiles() {
    emit gameInitialized();
 }
 
-void Shisensho::writeToFile(const QString& filename) const {
-    QString filePath = QDir::currentPath() + "/" + filename;
-    qDebug() << filePath;
-    QFile file(filePath);
-
-    //checking that file opened correctly
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        qDebug() << "can't open file";
-           return;
-    }
-
-    QTextStream out(&file);
-    QString gridString = gridStatusString();
-    qDebug() << gridString;
-    out << gridString << "\n";
-    qDebug() << "done writing";
-    file.close();
-}
-
 QString Shisensho::gridStatusString() const {
-    QString statusString = "[";
+    QStringList columnData;
 
     //adding game tiles to string
     for(int i=0; i<cols; i++) {
-        statusString += "[";
+        QString colString = "[";
         for(int j=0; j<rows; j++) {
             Tile* tile = tiles[i][j];
             unsigned id = (tile == nullptr) ? 42 : tile->getId();
-            statusString += QString::number(id);
+            colString += QString::number(id);
             //adding comma if needed
             if(j+1 != rows) {
-                statusString += ",";
+                colString += ",";
             }
         }
-        statusString += "]";
-        //adding comma if needed
-        if(i+1 != cols) {
-            statusString += ",";
-        }
+        colString += "]";
+        columnData.append(colString);
     }
-    statusString += "]";
 
-    return statusString;
+    return "[" + columnData.join(",") + "]";
 }
 
 std::list<struct Space> Shisensho::getEmptySpaces() const {
@@ -814,14 +791,6 @@ void generateShisenshoGames(const unsigned numGames, const QString& filename, co
         QString line = in.readLine();
         levels.insert(line);
     }
-
-    //displaying current levels
-    QSet<QString>::const_iterator i = levels.constBegin();
-    while (i != levels.constEnd()) {
-        qDebug() << *i;
-        ++i;
-    }
-
     file.close();
 
     Shisensho game;
@@ -854,7 +823,24 @@ void generateShisenshoGames(const unsigned numGames, const QString& filename, co
             game.createWinnableTiles();
             levelData = game.gridStatusString();
         }
-        game.writeToFile(filename);
+        writeToFile(levelData + "\n", filename);
         game.clearTiles();
     }
+}
+
+void writeToFile(const QString& data, const QString& filename) {
+    QString filePath = QDir::currentPath() + "/" + filename;
+    qDebug() << filePath;
+    QFile file(filePath);
+
+    //checking that file opened correctly
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        qDebug() << "can't open file";
+        return;
+    }
+
+    QTextStream out(&file);
+    out << data;
+    qDebug() << "done writing";
+    file.close();
 }

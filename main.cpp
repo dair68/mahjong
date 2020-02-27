@@ -24,18 +24,5 @@ int main(int argc, char *argv[])
     //generating and saving random shisensho games
     generateShisenshoGames(10, "small_levels.txt", "small");
 
-//    QFile file("out.txt");
-//    if (!file.open(QIODevice::WriteOnly | QIODevice::Append)){
-//        qDebug() << "cant open file";
-//        return 0;
-//    }
-
-
-//    QTextStream out(&file);
-//    QString line = "The magic number is: " + QString::number(49) + "\n";
-//    out << line;
-//    qDebug() << "done writing";
-//    file.close();
-
     return a.exec();
 }
