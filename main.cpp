@@ -17,12 +17,12 @@ int main(int argc, char *argv[])
 //    w.show();
 
     //shisensho screen
-//    ShisenWidget shisenWin;
-//    shisenWin.show();
-//    shisenWin.startGame();
+    ShisenWidget shisenWin;
+    shisenWin.show();
+    shisenWin.startGame();
 
     //generating and saving random shisensho games
-    generateShisenshoGames(10, "small_levels.txt", "small");
+//    generateShisenshoGames(10, "small_levels.txt", "small");
 
     return a.exec();
 }

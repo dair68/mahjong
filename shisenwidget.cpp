@@ -37,23 +37,31 @@ void ShisenWidget::startGame() {
 
     if (ok) {
         QStringList optionParts = gameDim.split(' ');
+        QString size = optionParts[0].toLower();
         QString dim = optionParts[1];
+        qDebug() << size;
         qDebug() << dim;
         dim.chop(1);
         dim.remove(0, 1);
 
-        QStringList dimensionChunks = dim.split('x');
-        qDebug() << dimensionChunks;
-        unsigned cols = dimensionChunks[0].toInt();
-        unsigned rows = dimensionChunks[1].toInt();
-        qDebug() << cols << rows;
+        QString filename = size + "_levels.txt";
+        QString level = selectRandomLevel(filename);
+        qDebug() << level;
 
-        game = Shisensho(cols, rows);
-        gridX = (width() - tileWidth*game.getCols())/2;
-        gridY = (height() - tileHeight*game.getRows())/2;
+        game = Shisensho(level);
 
-        qDebug() << "dimensions: " << game.getCols() << game.getRows();
-        game.createWinnableTiles();
+//        QStringList dimensionChunks = dim.split('x');
+//        qDebug() << dimensionChunks;
+//        unsigned cols = dimensionChunks[0].toInt();
+//        unsigned rows = dimensionChunks[1].toInt();
+//        qDebug() << cols << rows;
+
+//        game = Shisensho(cols, rows);
+//        gridX = (width() - tileWidth*game.getCols())/2;
+//        gridY = (height() - tileHeight*game.getRows())/2;
+
+//        qDebug() << "dimensions: " << game.getCols() << game.getRows();
+//        game.createWinnableTiles();
     }
 }
 

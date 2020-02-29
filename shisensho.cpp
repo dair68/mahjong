@@ -1,6 +1,7 @@
 #include "shisensho.h"
 #include "space.h"
 #include <fstream>
+#include <QRegularExpression>
 #include <QFile>
 #include <QDir>
 #include <vector>
@@ -36,6 +37,29 @@ Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
     }
 
     tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
+}
+
+Shisensho::Shisensho(const QString& levelData) : selectedTiles() {
+    QString columnData = levelData.mid(2, levelData.size() - 4);
+    QStringList columns = columnData.split(QRegularExpression("\\],\\["));
+    qDebug() << columns;
+
+    cols = columns.size();
+    rows = columns.first().split(",").size();
+    qDebug() << "dim: " << cols << rows;
+
+    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
+    tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows));
+
+    //filling in the tiles
+    for(int i=0; i<cols; i++) {
+        QStringList columnData = columns.at(i).split(",");
+        for(int j=0; j<columnData.size(); j++) {
+            unsigned tileId = columnData.at(j).toInt();
+            tiles[i][j] = (tileId == 42) ? nullptr : new Tile(tileId);
+            tileIds[i][j] = tileId;
+        }
+    }
 }
 
 Shisensho::Shisensho(const Shisensho& game) {
@@ -843,4 +867,27 @@ void writeToFile(const QString& data, const QString& filename) {
     out << data;
     qDebug() << "done writing";
     file.close();
+}
+
+QString selectRandomLevel(const QString& filename) {
+    QString filePath = QDir::currentPath() + "/" + filename;
+    QFile file(filePath);
+
+    //checking that file opened correctly
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "can't open file";
+        return "";
+    }
+
+    QStringList levels;
+
+    //reading levels from file
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString level = in.readLine();
+        levels.append(level);
+    }
+
+    int randIndex = rand() % levels.size();
+    return levels.at(randIndex);
 }

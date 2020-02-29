@@ -21,6 +21,10 @@ public:
     //@param numRows - number of rows
     Shisensho(const unsigned numCols, const unsigned numRows);
 
+    //creates game with a specific configuration of tiles
+    //@param levelData - a string of array in arrays, with inner arrays representing tiles by id (42 for no tile).
+    Shisensho(const QString& levelData);
+
     //copy constructor. creates a deep copy
     Shisensho(const Shisensho& game);
 
@@ -210,5 +214,10 @@ void writeToFile(const QString& data, const QString& filename);
 //@param filename - name of .txt file to store data
 //@param gameSize - string of the form "small", "medium", or "large" indicating game size. "small" by default
 void generateShisenshoGames(const unsigned numGames, const QString& filename, const QString& gameSize);
+
+//selects a random shisensho game from levels stored in .txt file, with one level per line
+//@param filename - name of txt file containing level data
+//returns a shisensho game string with tile pattern randomly chosen from .txt file
+QString selectRandomLevel(const QString& filename);
 
 #endif // SHISENSHO_H
