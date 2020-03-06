@@ -15,7 +15,8 @@ unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
 ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), gameStarted(false),
-    drawBackground(false), updatedSpace({-1,-1}), hoveredSpace({-1, -1}), path() {
+    drawBackground(false), updatedSpace({-1,-1}), hoveredSpace({-1, -1}), path(),
+    gridX(0), gridY(0) {
 
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -38,30 +39,11 @@ void ShisenWidget::startGame() {
     if (ok) {
         QStringList optionParts = gameDim.split(' ');
         QString size = optionParts[0].toLower();
-        QString dim = optionParts[1];
-        qDebug() << size;
-        qDebug() << dim;
-        dim.chop(1);
-        dim.remove(0, 1);
-
         QString filename = size + "_levels.txt";
-        QString level = selectRandomLevel(filename);
-        qDebug() << level;
+        game.configRandomLevel(filename);
 
-        game = Shisensho(level);
-
-//        QStringList dimensionChunks = dim.split('x');
-//        qDebug() << dimensionChunks;
-//        unsigned cols = dimensionChunks[0].toInt();
-//        unsigned rows = dimensionChunks[1].toInt();
-//        qDebug() << cols << rows;
-
-//        game = Shisensho(cols, rows);
-//        gridX = (width() - tileWidth*game.getCols())/2;
-//        gridY = (height() - tileHeight*game.getRows())/2;
-
-//        qDebug() << "dimensions: " << game.getCols() << game.getRows();
-//        game.createWinnableTiles();
+        gridX = (width() - tileWidth*game.getCols())/2;
+        gridY = (height() - tileHeight*game.getRows())/2;
     }
 }
 
@@ -170,6 +152,7 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
             //space occupied by tile
             if(tiles[i][j] != nullptr) {
                 Tile tile = *tiles[i][j];
+                //qDebug() << tile.getId();
 
                 int targetX = gridX + i*tileWidth;
                 int targetY = gridY + j*tileHeight;
@@ -178,6 +161,7 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
                 QString selectedPath = ":/images/selected_tiles.png";
                 QString normalPath = ":/images/mahjong_tiles.png";
                 QString tilesheetPath = tile.isSelected() ? selectedPath : normalPath;
+                //qDebug() << tilesheetPath;
 
                 QImage spriteSheet = QImage(tilesheetPath);
                 QRectF source(tile.getX(), tile.getY(), Tile::spriteWidth(), Tile::spriteHeight());

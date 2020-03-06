@@ -44,6 +44,10 @@ public:
     //creates random grid of tiles. game might not be winnable
     void createTiles();
 
+    //changes dimensions/tiles to match a randomly selected level
+    //@param filename - name of .txt file containing levels
+    void configRandomLevel(const QString& filename);
+
     //resets all tiles to how they were at the beginning of game. if no games played yet, creates empty tiles
     void resetTiles();
 
@@ -78,7 +82,7 @@ public:
     //returns number of rows
     unsigned getRows() const;
 
-    //returns selected tiles
+    //returns ed tiles
     std::list<struct Space> getSelectedTiles() const;
 
     //marks a tile as hovered

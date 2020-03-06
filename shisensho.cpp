@@ -39,29 +39,6 @@ Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
     tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
-Shisensho::Shisensho(const QString& levelData) : selectedTiles() {
-    QString columnData = levelData.mid(2, levelData.size() - 4);
-    QStringList columns = columnData.split(QRegularExpression("\\],\\["));
-    qDebug() << columns;
-
-    cols = columns.size();
-    rows = columns.first().split(",").size();
-    qDebug() << "dim: " << cols << rows;
-
-    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
-    tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows));
-
-    //filling in the tiles
-    for(int i=0; i<cols; i++) {
-        QStringList columnData = columns.at(i).split(",");
-        for(int j=0; j<columnData.size(); j++) {
-            unsigned tileId = columnData.at(j).toInt();
-            tiles[i][j] = (tileId == 42) ? nullptr : new Tile(tileId);
-            tileIds[i][j] = tileId;
-        }
-    }
-}
-
 Shisensho::Shisensho(const Shisensho& game) {
    copy(game);
 }
@@ -295,6 +272,33 @@ void Shisensho::createTiles() {
 
         pairs++;
     }
+}
+
+void Shisensho::configRandomLevel(const QString& filename) {
+    QString levelData = selectRandomLevel(filename);
+
+    QString columnData = levelData.mid(2, levelData.size() - 4);
+    QStringList columns = columnData.split(QRegularExpression("\\],\\["));
+    qDebug() << columns;
+
+    cols = columns.size();
+    rows = columns.first().split(",").size();
+    qDebug() << "dim: " << cols << rows;
+
+    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
+    tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows));
+
+    //filling in the tiles
+    for(int i=0; i<cols; i++) {
+        QStringList columnData = columns.at(i).split(",");
+        for(int j=0; j<columnData.size(); j++) {
+            unsigned tileId = columnData.at(j).toInt();
+            tiles[i][j] = (tileId == 42) ? nullptr : new Tile(tileId);
+            tileIds[i][j] = tileId;
+        }
+    }
+
+    emit gameInitialized();
 }
 
 void Shisensho::resetTiles() {
