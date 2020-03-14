@@ -22,7 +22,16 @@ int main(int argc, char *argv[])
     shisenWin.startGame();
 
     //generating and saving random shisensho games
-//    generateShisenshoGames(10, "small_levels.txt", "small");
+//    generateShisenshoGames(50, "small_levels.txt", "small");
+//    qDebug() << "done making levels";
+
+    //generating medium levels
+//    generateShisenshoGames(1, "medium_levels.txt", "medium");
+//    qDebug() << "done making levels";
+
+    //generating large levels
+//    generateShisenshoGames(2, "large_levels.txt", "large");
+//    qDebug() << "done making levels";
 
     return a.exec();
 }

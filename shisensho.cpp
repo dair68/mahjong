@@ -136,7 +136,7 @@ bool Shisensho::isWinnable() const {
 
     //searching for safely removable tiles
     while(copy.hasRemovableTiles()) {
-        //qDebug() << "pruning";
+        qDebug() << "pruning";
         //qDebug() << numTiles << "tiles left";
         std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
 
@@ -215,7 +215,7 @@ bool Shisensho::isWinnable() const {
 
                 //removable tiles
                 if(copy.removableTiles(space1, space2)) {
-                    //qDebug() << "guess";
+                    qDebug() << "guess";
                     Shisensho trialGame = copy;
                     trialGame.removeTile(space1);
                     trialGame.removeTile(space2);
@@ -874,12 +874,12 @@ void writeToFile(const QString& data, const QString& filename) {
 }
 
 QString selectRandomLevel(const QString& filename) {
-    QString filePath = QDir::currentPath() + "/" + filename;
-    QFile file(filePath);
+    QFile file (filename);
 
     //checking that file opened correctly
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "can't open file";
+        qDebug() << filename;
         return "";
     }
 

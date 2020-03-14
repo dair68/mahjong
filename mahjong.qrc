@@ -11,4 +11,9 @@
         <file>selected_tiles.png</file>
         <file>dim_selected_tiles.png</file>
     </qresource>
+    <qresource prefix="/levels">
+        <file>small_levels.txt</file>
+        <file>medium_levels.txt</file>
+        <file>large_levels.txt</file>
+    </qresource>
 </RCC>

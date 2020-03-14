@@ -39,7 +39,7 @@ void ShisenWidget::startGame() {
     if (ok) {
         QStringList optionParts = gameDim.split(' ');
         QString size = optionParts[0].toLower();
-        QString filename = size + "_levels.txt";
+        QString filename = ":/levels/" + size + "_levels.txt";
         game.configRandomLevel(filename);
 
         gridX = (width() - tileWidth*game.getCols())/2;
@@ -125,7 +125,7 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
 
         //adding delay before tiles removed
         drawBackground = false;
-        int milliseconds = 500;
+        int milliseconds = 200;
         QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
     }
 
