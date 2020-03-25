@@ -1,13 +1,24 @@
 #include "stopwatch.h"
 #include <QTimer>
+#include <QPainter>
 
 Stopwatch::Stopwatch(QWidget* parent) : QLabel(parent), seconds(0), timer(this) {
     connect(&timer, &QTimer::timeout, this, &Stopwatch::incrementTime);
+    updateDisplay();
 }
 
 void Stopwatch::start() {
     const int milliseconds = 1000;
     timer.start(milliseconds);
+}
+
+void Stopwatch::stop() {
+    timer.stop();
+}
+
+void Stopwatch::reset() {
+    seconds = 0;
+    updateDisplay();
 }
 
 void Stopwatch::incrementTime() {
@@ -35,4 +46,11 @@ QString Stopwatch::getTime() const {
 void Stopwatch::updateDisplay() {
     QString time = getTime();
     setText(time);
+}
+
+void Stopwatch::setBackgroundColor(const QColor& color) {
+     QPalette pal = palette();
+     pal.setColor(QPalette::Background, color);
+     setAutoFillBackground(true);
+     setPalette(pal);
 }

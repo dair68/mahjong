@@ -14,6 +14,12 @@ public:
     //starts the stopwatch. increments time every second and displays hh:mm:ss.
     void start();
 
+    //stops the stopwatch. current time preserved on display
+    void stop();
+
+    //resets the time to 0 seconds
+    void reset();
+
     //increments time by 1 second
     void incrementTime();
 
@@ -26,6 +32,10 @@ public:
 
     //updates the time displayed by widget. displays hh:mm:ss.
     void updateDisplay();
+
+    //sets the background color of widget
+    //@param color - new background color
+    void setBackgroundColor(const QColor& color);
 private:
     unsigned seconds;
     QTimer timer;

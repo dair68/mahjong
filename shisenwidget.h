@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 #include "tile.h"
 #include "shisensho.h"
+#include "stopwatch.h"
 
 class ShisenWidget : public QWidget {
     Q_OBJECT
@@ -67,7 +68,7 @@ public slots:
     //sets drawBackground to true
     void redrawBackground();
 
-    //starts the paint events
+    //starts the paint events and ticking of time display
     void startPainting();
 
     //checks if the game is over and ends things accordingly if so
@@ -75,6 +76,7 @@ public slots:
 
 private:
     Shisensho game;
+    Stopwatch time;
     bool gameStarted;
     bool drawBackground;
     struct Space updatedSpace;

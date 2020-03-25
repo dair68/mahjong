@@ -14,9 +14,18 @@
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
-ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), gameStarted(false),
+ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), time(this), gameStarted(false),
     drawBackground(false), updatedSpace({-1,-1}), hoveredSpace({-1, -1}), path(),
     gridX(0), gridY(0) {
+
+
+//    QVBoxLayout* layout = new QVBoxLayout;
+//    layout->addWidget(&time);
+//    setLayout(layout);
+    time.setBackgroundColor(Qt::white);
+    time.setAlignment(Qt::AlignCenter);
+    time.resize(200, 100);
+    //time.setBackgroundColor(Qt::darkGreen);
 
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -25,6 +34,7 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), gameSt
     setMouseTracking(true);
 
     QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
+
 }
 
 void ShisenWidget::startGame() {
@@ -44,10 +54,12 @@ void ShisenWidget::startGame() {
 
         gridX = (width() - tileWidth*game.getCols())/2;
         gridY = (height() - tileHeight*game.getRows())/2;
+        //time.start();
     }
 }
 
 void ShisenWidget::endGame() {
+    time.stop();
     QMessageBox gameOverBox;
     QString message = game.tilesLeft() ? "Game Over" : "Congratulations. You won!";
     gameOverBox.setText(message);
@@ -99,6 +111,7 @@ void ShisenWidget::reset() {
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
     path.clear();
+    time.reset();
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
@@ -332,6 +345,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                     game.deselectTiles();
                     drawBackground = true;
                     update();
+                    time.increaseTime(5);
                 }
             }
         }
@@ -356,4 +370,5 @@ void ShisenWidget::startPainting() {
     qDebug() << "finished making tiles";
     gameStarted = true;
     redrawBackground();
+    time.start();
 }

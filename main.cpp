@@ -18,15 +18,15 @@ int main(int argc, char *argv[])
 //    w.show();
 
     //stopwatch
-    Stopwatch time;
-    time.increaseTime(3500);
-    time.show();
-    time.start();
+//    Stopwatch time;
+//    time.increaseTime(3500);
+//    time.show();
+//    time.start();
 
     //shisensho screen
-//    ShisenWidget shisenWin;
-//    shisenWin.show();
-//    shisenWin.startGame();
+    ShisenWidget shisenWin;
+    shisenWin.show();
+    shisenWin.startGame();
 
     //generating and saving random shisensho games
 //    generateShisenshoGames(50, "small_levels.txt", "small");
