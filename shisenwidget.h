@@ -35,10 +35,15 @@ public:
     //@param painter - a QPainter object pointing to this widget
     void drawPath(QPainter& painter) const;
 
-    //redraws a single space in grid
+    //redraws a single space in grid. will draw penalty over space if necessary.
     //@param painter - a QPainter object pointing to this widget
     //@param space - space containing tile to be redrawn
     void redrawTile(QPainter& painter, const struct Space& space) const;
+
+    //displays time penalty '+[penalty]s' over a specific space in grid
+    //@param painter - QPainter object pointing to this widget
+    //@param space - space where time penalty will be drawn
+    void displayTimePenalty(const struct Space& space);
 
     //checks if a given space exists in tile grid numbered from 0
     //@param space - some space with a column and row
@@ -77,10 +82,13 @@ public slots:
 private:
     Shisensho game;
     Stopwatch time;
+    QLabel penaltyText;
+    unsigned timePenalty;
     bool gameStarted;
     bool drawBackground;
     struct Space updatedSpace;
     struct Space hoveredSpace;
+    struct Space penaltySpace;
     std::vector<struct Space> path;
     int gridX;
     int gridY;
