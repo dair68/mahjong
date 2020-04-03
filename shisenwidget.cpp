@@ -15,7 +15,7 @@ unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
 ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), time(this),
-    timePenalty(0), penaltyText(this), gameStarted(false), drawBackground(false), updatedSpace({-1, -1}),
+    timePenalty(0), gameStarted(false), drawBackground(false), updatedSpace({-1, -1}),
     hoveredSpace({-1, -1}), penaltySpace({-1, -1}), path(), gridX(0), gridY(0) {
 
 //    QVBoxLayout* layout = new QVBoxLayout;
@@ -25,12 +25,6 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(), time(t
     time.setAlignment(Qt::AlignCenter);
     time.resize(200, 100);
     //time.setBackgroundColor(Qt::darkGreen);
-
-    penaltyText.resize(tileWidth, tileHeight);
-    penaltyText.setAlignment(Qt::AlignCenter);
-    QFont penaltyFont("Times", 15, QFont::Bold);
-    penaltyText.setFont(penaltyFont);
-    penaltyText.setStyleSheet("color: purple");
 
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -129,9 +123,15 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
     }
 
     //checking if any newly hovered tiles
-    if(gridContainsSpace(hoveredSpace)) {
+    if(gridContainsSpace(hoveredSpace) && timePenalty == 0) {
         qDebug() << "drawing hovered tile";
         redrawTile(painter, hoveredSpace);
+    }
+    //drawing time penalty
+    if(timePenalty > 0) {
+        drawTimePenalty(painter, penaltySpace);
+        penaltySpace = {-1, -1};
+        timePenalty = 0;
     }
 
     //drawing any paths
@@ -242,22 +242,19 @@ void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) cons
     }
 }
 
-void ShisenWidget::displayTimePenalty(const struct Space& space) {
-    qDebug() << "penalty";
-    qDebug() << space.col << space.row;
+void ShisenWidget::drawTimePenalty(QPainter& painter, const struct Space& space) const {
     int verticalShift = Tile::spriteHeight() - tileHeight;
     int topCornerX = gridX;
     int topCornerY = gridY + verticalShift;
 
     int targetX = topCornerX + tileWidth * space.col;
     int targetY = topCornerY + tileHeight * space.row;
-    penaltyText.move(targetX, targetY);
+    QRect target = QRect(targetX, targetY, tileWidth, tileHeight);
 
-//    painter.setPen(Qt::blue);
-//    painter.setFont(QFont("Arial", 30));
     QString text = "+" + QString::number(timePenalty) + "s";
-    penaltyText.setText(text);
-    qDebug() << text;
+    painter.setPen(Qt::darkMagenta);
+    painter.setFont(QFont("Times", 15, QFont::Bold));
+    painter.drawText(target, Qt::AlignCenter, text);
 }
 
 bool ShisenWidget::gridContainsSpace(const struct Space &space) const {
@@ -366,13 +363,11 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                     penaltySpace = clickedSpace;
                     qDebug() << penaltySpace.col << penaltySpace.row;
                     timePenalty = 5;
-                   // updatedSpace = clickedSpace;
-                    displayTimePenalty(penaltySpace);
                     time.increaseTime(5);
+                    repaint();
                     game.deselectTiles();
                     int milliseconds = 100;
                     QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
-                    //redrawBackground();
                 }
             }
         }
@@ -389,8 +384,8 @@ void ShisenWidget::changeEvent(QEvent* event) {
 
 void ShisenWidget::redrawBackground() {
     qDebug() << "redrawing";
-    timePenalty = 0;
-    penaltyText.clear();
+//    timePenalty = 0;
+//    penaltyText.clear();
     drawBackground = true;
     update();
 }
