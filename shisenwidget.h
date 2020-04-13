@@ -43,8 +43,8 @@ public:
 
     //draws the time penalty over a certain space in grid
     //@param painter - a QPainter object pointing to this widget
-    //@param space - space where penalty will be drawn
-    void drawTimePenalty(QPainter& painter, const struct Space& space) const;
+    //@param rect - rectangle where penalty text will be drawn
+    void drawTimePenalty(QPainter& painter, const QRect& rect) const;
 
     //checks if a given space exists in tile grid numbered from 0
     //@param space - some space with a column and row
@@ -60,6 +60,10 @@ public:
     //@param space - some space. does not need to be in grid or contain tile
     //returns the point that would be in the center of tile located at space
     QPoint findCenterPoint(const struct Space& space) const;
+
+    //finds the rectangle bounding the face of a tile at a given space
+    //@param space - some space. does not need to be in grid or contain tile
+    QRect findBoundingRect(const struct Space& space) const;
 
     //colors tile if mouse hovers over it
     void mouseMoveEvent(QMouseEvent* event) override;
@@ -95,7 +99,7 @@ private:
     bool drawBackground;
     struct Space updatedSpace;
     struct Space hoveredSpace;
-    struct Space penaltySpace;
+    QRect penaltyRect;
     std::vector<struct Space> path;
     int gridX;
     int gridY;

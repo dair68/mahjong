@@ -16,16 +16,8 @@ unsigned ShisenWidget::tileHeight= 65;
 
 ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(),
     timeDisplay(this), timePenalty(0), gameStarted(false), drawBackground(false),
-    updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltySpace({-1, -1}), path(), gridX(0), gridY(0),
-    undoButton("Undo", this), hintButton("Hint", this) {
-
-//    QVBoxLayout* layout = new QVBoxLayout;
-//    layout->addWidget(&time);
-//    setLayout(layout);
-    timeDisplay.setBackgroundColor(Qt::white);
-    timeDisplay.setAlignment(Qt::AlignCenter);
-    timeDisplay.resize(200, 100);
-    //time.setBackgroundColor(Qt::darkGreen);
+    updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
+    gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this) {
 
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -33,9 +25,21 @@ ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(),
     setMinimumSize(1200,800);
     setMouseTracking(true);
 
+    timeDisplay.setAlignment(Qt::AlignCenter);
+    timeDisplay.resize(200, 100);
+    timeDisplay.move(width() / 2 - timeDisplay.width() / 2, 10);
+    timeDisplay.setStyleSheet("color: white; "
+                              "background-color: green;");
+
     undoButton.setEnabled(false);
     hintButton.setEnabled(false);
-    hintButton.move(500, 0);
+
+    int hMargin = 10;
+    int vMargin = 60;
+    undoButton.move(width() / 2 - undoButton.width() - hMargin, height() - vMargin);
+    hintButton.move(width() / 2 + hMargin, height() - vMargin);
+
+    setStyleSheet("font: 12pt;");
 
     QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
     QObject::connect(&undoButton, &QPushButton::clicked, this, &ShisenWidget::undoButtonHandler);
@@ -140,8 +144,8 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
     }
     //drawing time penalty
     if(timePenalty > 0) {
-        drawTimePenalty(painter, penaltySpace);
-        penaltySpace = {-1, -1};
+        drawTimePenalty(painter, penaltyRect);
+        penaltyRect = QRect();
         timePenalty = 0;
     }
 
@@ -261,21 +265,11 @@ void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) cons
     }
 }
 
-void ShisenWidget::drawTimePenalty(QPainter& painter, const struct Space& space) const {
-    int verticalShift = Tile::spriteHeight() - tileHeight;
-    int topCornerX = gridX;
-    int topCornerY = gridY + verticalShift;
-
-    int width = 3*tileWidth;
-    int height = tileHeight;
-    int targetX = topCornerX + tileWidth * (space.col - 1);
-    int targetY = topCornerY + tileHeight * space.row;
-    QRect target = QRect(targetX, targetY, width, height);
-
+void ShisenWidget::drawTimePenalty(QPainter& painter, const QRect& rect) const {
     QString text = "+" + QString::number(timePenalty) + "s";
     painter.setPen(Qt::darkMagenta);
     painter.setFont(QFont("Times", 15, QFont::Bold));
-    painter.drawText(target, Qt::AlignCenter, text);
+    painter.drawText(rect, Qt::AlignCenter, text);
 }
 
 bool ShisenWidget::gridContainsSpace(const struct Space &space) const {
@@ -297,17 +291,17 @@ struct Space ShisenWidget::findSpace(const unsigned x, const unsigned y) const {
 }
 
 QPoint ShisenWidget::findCenterPoint(const struct Space& space) const {
-    int col = space.col;
-    int row = space.row;
-
-    int verticalShift = Tile::spriteHeight() - tileHeight;
-    int cornerX = gridX + col * tileWidth;
-    int cornerY = gridY + row * tileHeight + verticalShift;
-
-    int centerX = cornerX + tileWidth / 2;
-    int centerY = cornerY + tileHeight / 2;
-
+    QRect boundingRect = findBoundingRect(space);
+    int centerX = boundingRect.x() + tileWidth / 2;
+    int centerY = boundingRect.y() + tileHeight / 2;
     return QPoint(centerX, centerY);
+}
+
+QRect ShisenWidget::findBoundingRect(const struct Space& space) const {
+    int verticalShift = Tile::spriteHeight() - tileHeight;
+    int rectX = gridX + space.col * tileWidth;
+    int rectY = gridY + space.row * tileHeight + verticalShift;
+    return QRect(rectX, rectY, tileWidth, tileHeight);
 }
 
 void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
@@ -384,8 +378,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                 }
                 //not a match
                 else {
-                    penaltySpace = clickedSpace;
-                    qDebug() << penaltySpace.col << penaltySpace.row;
+                    penaltyRect = findBoundingRect(clickedSpace);
                     timePenalty = 5;
                     timeDisplay.increaseTime(5);
                     repaint();
@@ -430,7 +423,7 @@ void ShisenWidget::markRemovableTiles() {
     game.markRemovableTiles();
     timePenalty = 60;
     timeDisplay.increaseTime(timePenalty);
-    penaltySpace = {(int)game.getCols() / 2 - 1, -2};
+    penaltyRect = QRect(hintButton.x(), hintButton.y() - 60, hintButton.width(), tileHeight);
     repaint();
     int milliseconds = 100;
     QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));

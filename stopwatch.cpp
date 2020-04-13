@@ -45,12 +45,5 @@ QString Stopwatch::getTime() const {
 
 void Stopwatch::updateDisplay() {
     QString time = getTime();
-    setText(time);
-}
-
-void Stopwatch::setBackgroundColor(const QColor& color) {
-     QPalette pal = palette();
-     pal.setColor(QPalette::Background, color);
-     setAutoFillBackground(true);
-     setPalette(pal);
+    setText("Time\n" + time);
 }

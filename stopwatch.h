@@ -32,10 +32,6 @@ public:
 
     //updates the time displayed by widget. displays hh:mm:ss.
     void updateDisplay();
-
-    //sets the background color of widget
-    //@param color - new background color
-    void setBackgroundColor(const QColor& color);
 private:
     unsigned seconds;
     QTimer timer;
