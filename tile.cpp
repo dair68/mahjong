@@ -5,18 +5,14 @@
 unsigned Tile::SPRITE_WIDTH = 64;
 unsigned Tile::SPRITE_HEIGHT = 78;
 
-Tile::Tile() {
-    id = 0;
-    suit = "dragon";
-    number = 1;
-    faceup = true;
-    selected = false;
-    hovered = false;
+Tile::Tile() : id(0), suit("dragon"), number(1), faceup(true), selected(false),
+    hovered(false), highlighted(false) {
+
 }
 
-Tile::Tile(const unsigned id) {
+Tile::Tile(const unsigned id) : faceup(true), selected(false), hovered(false),
+highlighted(false) {
     assert(0 <= id && id < 42);
-
     this->id = id;
 
     //determing suit and number from id
@@ -52,36 +48,6 @@ Tile::Tile(const unsigned id) {
         suit = "none";
         number = 0;
     }
-
-    faceup = true;
-    selected = false;
-    hovered = false;
-}
-
-Tile::Tile(const std::string& suit, const unsigned number) {
-    this->suit = suit;
-    this->number = number;
-
-    //finding id from suit and number
-    if(suit == "dot") {
-        id = number;
-    }
-    else if(suit == "bamboo") {
-        id = 9 + number;
-    }
-    else if(suit == "character") {
-        id = 18 + number;
-    }
-    //invalid suit. creating blank tile
-    else {
-        id=0;
-        this->suit = "none";
-        this->number = 0;
-    }
-
-    faceup = true;
-    selected = false;
-    hovered = false;
 }
 
 unsigned Tile::getId() const {
@@ -102,6 +68,10 @@ bool Tile::isFaceup() const {
 
 bool Tile::isSelected() const {
     return selected;
+}
+
+bool Tile::isHighlighted() const {
+    return highlighted;
 }
 
 void Tile::toggleSelection() {
@@ -126,6 +96,10 @@ void Tile::markHovered() {
 
 void Tile::markNotHovered() {
     hovered = false;
+}
+
+void Tile::setHighlight(const bool highlightStatus) {
+    highlighted = highlightStatus;
 }
 
 unsigned Tile::spriteWidth() {

@@ -10,6 +10,9 @@
         <file>dim_tiles.png</file>
         <file>selected_tiles.png</file>
         <file>dim_selected_tiles.png</file>
+        <file>dark_tiles.png</file>
+        <file>super_dark_tiles.png</file>
+        <file>darker_tiles.png</file>
     </qresource>
     <qresource prefix="/levels">
         <file>small_levels.txt</file>

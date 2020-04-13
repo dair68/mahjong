@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QLabel>
+#include <QPushButton>
 #include "mainwindow.h"
 #include "tile.h"
 #include "shisensho.h"
@@ -27,7 +28,7 @@ public:
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;
 
-    //draws all the tiles at once
+    //draws all the tiles at once. will draw tiles as highlighted if needed.
     //@param painter - a QPainter object pointing to this widget
     void drawTiles(QPainter& painter) const;
 
@@ -79,9 +80,16 @@ public slots:
     //checks if the game is over and ends things accordingly if so
     void checkGameStatus();
 
+    //restores last 2 tiles if undo mode, removes last 2 tiles if redo mode
+    void undoButtonHandler();
+
+    //highlights the currently removable tiles and incurs 1 minute time penalty
+    void markRemovableTiles();
+
+    //
 private:
     Shisensho game;
-    Stopwatch time;
+    Stopwatch timeDisplay;
     unsigned timePenalty;
     bool gameStarted;
     bool drawBackground;
@@ -93,6 +101,8 @@ private:
     int gridY;
     static unsigned tileWidth;
     static unsigned tileHeight;
+    QPushButton undoButton;
+    QPushButton hintButton;
 };
 
 #endif // SHISENWIDGET_H

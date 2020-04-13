@@ -38,6 +38,9 @@ public:
     //returns number of tiles currently on the field
     unsigned numTiles() const;
 
+    //checks if any tiles have been removed
+    bool tilesRemoved() const;
+
     //removes all the tiles in the grid
     void clearTiles();
 
@@ -93,6 +96,12 @@ public:
     //@param space - space containing tile
     void markNotHovered(const struct Space& space);
 
+    //marks all current removable tiles highlighted
+    void markRemovableTiles();
+
+    //marks all tiles as not highlighted
+    void unhighlightTiles();
+
     //selects tile and pushes it to selectedTiles no more than 2 tiles selected total
     //@param space - space containing tile
     void selectTile(const struct Space& space);
@@ -139,8 +148,11 @@ public:
     //deselects all tiles
     void deselectTiles();
 
-    //removes all selected tiles from grid
+    //removes pair of selected tiles from grid. stores location and values of those tiles
     void removeSelectedTiles();
+
+    //restores last pair of tiles removed
+    void undoLastMove();
 
     //sees if the 2 selected tiles have the correct symbols to be removable
     //@param tile1 - first tile
@@ -176,6 +188,8 @@ private:
     std::vector<std::vector<Tile*>> tiles;
     std::vector<std::vector<unsigned>> tileIds;
     std::list<struct Space> selectedTiles;
+    std::list<struct Space> recentSpaces;
+    std::vector<Tile*> recentTiles;
 };
 
 //partitions vector into 2 based on a set of indexes

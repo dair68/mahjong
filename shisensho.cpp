@@ -10,7 +10,8 @@
 #include <cassert>
 #include <QDebug>
 
-Shisensho::Shisensho() : cols(12), rows(5), selectedTiles() {
+Shisensho::Shisensho() : cols(12), rows(5), selectedTiles(), recentSpaces(),
+    recentTiles(2, nullptr) {
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
 
     //creating empty grid
@@ -71,6 +72,10 @@ unsigned Shisensho::numTiles() const {
     }
 
     return numTiles;
+}
+
+bool Shisensho::tilesRemoved() const {
+    return numTiles() == (cols * rows);
 }
 
 void Shisensho::clearTiles() {
@@ -449,6 +454,41 @@ void Shisensho::markNotHovered(const struct Space& space) {
     tile.markNotHovered();
 }
 
+void Shisensho::markRemovableTiles() {
+    std::map<unsigned, std::vector<struct Space>> tileMap = getTileMap();
+
+    //searching for removable tiles
+    for(auto& [id, spaces] : tileMap) {
+        //comparing spaces that have matching
+        for(int i=0; i<spaces.size(); i++) {
+            for(int j=i+1; j<spaces.size(); j++) {
+                struct Space space1 = spaces[i];
+                struct Space space2 = spaces[j];
+
+                //tiles removable 
+                if(removableTiles(space1, space2)) {
+                    Tile& tile1 = *tiles[space1.col][space1.row];
+                    Tile& tile2 = *tiles[space2.col][space2.row];
+                    tile1.setHighlight(true);
+                    tile2.setHighlight(true);
+                }
+            }
+        }
+    }
+}
+
+void Shisensho::unhighlightTiles() {
+    //setting all tiles to not highlighted
+    for(int i=0; i<cols; i++) {
+        for(int j=0; j<rows; j++) {
+            //not nullpointer
+            if(tiles[i][j] != nullptr) {
+                 tiles[i][j]->setHighlight(false);
+            }
+        }
+    }
+}
+
 void Shisensho::selectTile(const struct Space& space) {
     assert(gridContainsSpace(space));
     assert(tiles[space.col][space.row] != nullptr);
@@ -698,13 +738,40 @@ void Shisensho::deselectTiles() {
 }
 
 void Shisensho::removeSelectedTiles() {
+    assert(selectedTiles.size() == 2);
+    recentSpaces.clear();
+
     //removing each selected tile
     for(struct Space space : selectedTiles) {
-        removeTile(space);
+        int index = recentSpaces.size();
+
+        //deleting pointer if necessary
+        if(recentTiles[index] == nullptr) {
+            delete recentTiles[index];
+            recentTiles[index] = nullptr;
+        }
+
+        recentTiles[index] = tiles[space.col][space.row];
+        recentSpaces.push_back(space);
+        deselectTile(space);
+        tiles[space.col][space.row] = nullptr;
     }
 
-    selectedTiles.clear();
 }
+
+void Shisensho::undoLastMove() {
+    assert(recentSpaces.size() == 2 && recentTiles.size() == 2);
+    int index = 0;
+
+    for(struct Space space : recentSpaces) {
+        tiles[space.col][space.row] = recentTiles[index];
+        recentTiles[index] = nullptr;
+        index++;
+    }
+
+    recentSpaces.clear();
+}
+
 
 bool Shisensho::matchingTiles(const Tile& tile1, const Tile& tile2) const {
     //tiles have same symbol

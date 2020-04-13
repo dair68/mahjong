@@ -13,11 +13,6 @@ public:
     //@param id - id number of tile. number from 0-42. tiles numbered left to right, top to bottom on tilesheet
     Tile(const unsigned id);
 
-    //creates a tile of a certain suit and number
-    //@param suit - string of the form "dot", "bamboo", or "character"
-    //@param number - integer from 1 to 9
-    Tile(const std::string& suit, const unsigned number);
-
     //gets tile id
     unsigned getId() const;
 
@@ -32,6 +27,9 @@ public:
 
     //checks if tile has been selected
     bool isSelected() const;
+
+    //checks if tile highlighted
+    bool isHighlighted() const;
 
     //selects tile if not already selected, deselects otherwise
     void toggleSelection();
@@ -50,6 +48,10 @@ public:
 
     //marks tile as not hovered
     void markNotHovered();
+
+    //marks tile as highlighted or not highlighted
+    //@param hightlightStatus - a boolean indicating whether tile currently removable
+    void setHighlight(const bool highlightStatus);
 
     //obtains width of tile on spritesheet
     static unsigned spriteWidth();
@@ -80,6 +82,7 @@ private:
     bool faceup;
     bool selected;
     bool hovered;
+    bool highlighted;
 };
 
 //obtains a random element from a vector
