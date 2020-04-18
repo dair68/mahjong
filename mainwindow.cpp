@@ -30,5 +30,10 @@ void MainWindow::toShisensho() {
     shisen->startGame();
 }
 
+void MainWindow::toTitle() {
+    QWidget* title = new TitleScreen(this);
+    setCentralWidget(title);
+}
+
 
 

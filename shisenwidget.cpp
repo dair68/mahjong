@@ -57,9 +57,12 @@ void ShisenWidget::endGame() {
     timeDisplay.stop();
     undoButton.setEnabled(false);
     hintButton.setEnabled(false);
+}
+
+void ShisenWidget::showGameOverDialog() {
+    QString timeText = "Time: " + timeDisplay.getTime();
+    QString text = game.tilesLeft() ? "Game Over" : timeText + "\nCongratulations. You won!";
     QMessageBox gameOverBox;
-    QString message = game.tilesLeft() ? "Game Over" : "Congratulations. You won!";
-    QString text = "Time: " + timeDisplay.getTime() + "\n" + message;
     gameOverBox.setText(text);
     QPushButton* retry = nullptr;
 
@@ -80,10 +83,7 @@ void ShisenWidget::endGame() {
     }
     //try again clicked
     else if(gameOverBox.clickedButton() == retry) {
-        qDebug() << "Resetting tiles";
-        reset();
-        game.resetTiles();
-        startPainting();
+        restartGame();
     }
     //quitting
     else {
@@ -98,6 +98,7 @@ void ShisenWidget::checkGameStatus() {
         qDebug() << "ending game";
         gameStarted = false;
         endGame();
+        showGameOverDialog();
     }
 }
 
@@ -110,6 +111,14 @@ void ShisenWidget::reset() {
     path.clear();
     timeDisplay.reset();
     undoButton.setEnabled(false);
+    hintButton.setEnabled(false);
+}
+
+void ShisenWidget::restartGame() {
+    qDebug() << "Resetting tiles";
+    reset();
+    game.resetTiles();
+    startPainting();
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {
@@ -419,6 +428,103 @@ void ShisenWidget::markRemovableTiles() {
     hintButton.setEnabled(false);
 }
 
+void ShisenWidget::showRestartDialog() {
+    timeDisplay.stop();
+    QMessageBox dialog;
+    dialog.setText("Restart the current game?");
+    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int ret = dialog.exec();
+
+    //different button cases
+    switch (ret) {
+      //yes clicked, restarting game
+      case QMessageBox::Yes:
+          restartGame();
+          break;
+      //no clicked, resuming game
+      case QMessageBox::No:
+          timeDisplay.start();
+          break;
+      //default case. error occured
+      default:
+          qDebug() << "invalid response";
+          break;
+    }
+}
+
+void ShisenWidget::showNewGameDialog() {
+    timeDisplay.stop();
+    QMessageBox dialog;
+    dialog.setText("Start a new game?");
+    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int ret = dialog.exec();
+
+    //different button cases
+    switch (ret) {
+      //yes clicked, restarting game
+      case QMessageBox::Yes:
+          reset();
+          startGame();
+          break;
+      //no clicked, resuming game
+      case QMessageBox::No:
+          timeDisplay.start();
+          break;
+      //default case. error occured
+      default:
+          qDebug() << "invalid response";
+          break;
+    }
+}
+
+void ShisenWidget::showQuitDialog() {
+    timeDisplay.stop();
+    QMessageBox dialog;
+    dialog.setText("Are you sure you want to quit?");
+    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int ret = dialog.exec();
+
+    //different button cases
+    switch (ret) {
+      //yes clicked, restarting game
+      case QMessageBox::Yes:
+          QApplication::quit();
+          break;
+      //no clicked, resuming game
+      case QMessageBox::No:
+          timeDisplay.start();
+          break;
+      //default case. error occured
+      default:
+          qDebug() << "invalid response";
+          break;
+    }
+}
+
+void ShisenWidget::showTitleDialog() {
+    timeDisplay.stop();
+    QMessageBox dialog;
+    dialog.setText("Return to title screen?");
+    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int ret = dialog.exec();
+
+    //different button cases
+    switch (ret) {
+      //yes clicked, restarting game
+      case QMessageBox::Yes:
+          ((MainWindow*) parent())->toTitle();
+          break;
+      //no clicked, resuming game
+      case QMessageBox::No:
+          timeDisplay.start();
+          break;
+      //default case. error occured
+      default:
+          qDebug() << "invalid response";
+          break;
+    }
+}
+
 void ShisenWidget::initializeAttributes() {
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -448,8 +554,18 @@ void ShisenWidget::initializeButtons() {
 
 void ShisenWidget::createMenu() {
     QMenu* menu = menuBar.addMenu("Menu");
-    menu->addAction("Restart game");
-    menu->addAction("New game");
-    menu->addAction("Return to title");
-    menu->addAction("Quit");
+    QAction* restart = menu->addAction("Restart game");
+    QObject::connect(restart, &QAction::triggered, this, &ShisenWidget::showRestartDialog);
+
+    QAction* newGame = menu->addAction("New game");
+    QObject::connect(newGame, &QAction::triggered, this, &ShisenWidget::showNewGameDialog);
+
+    //has parent widget
+    if(parent() != nullptr) {
+       QAction* title = menu->addAction("Return to title");
+       QObject::connect(title, &QAction::triggered, this, &ShisenWidget::showTitleDialog);
+    }
+
+    QAction* quit = menu->addAction("Quit");
+    QObject::connect(quit, &QAction::triggered, this, &ShisenWidget::showQuitDialog);
 }

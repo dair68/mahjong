@@ -20,11 +20,17 @@ public:
     //asks player for a game of custom size, then starts game
     void startGame();
 
-    //shows game over dialog and acts accordingly
+    //stops the game
     void endGame();
+
+    //shows the dialog that will allow user to play new game or redo current game
+    void showGameOverDialog();
 
     //resets widget fields
     void reset();
+
+    //restarts current or previously played game
+    void restartGame();
 
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;
@@ -91,7 +97,18 @@ public slots:
     //highlights the currently removable tiles and incurs 1 minute time penalty
     void markRemovableTiles();
 
-    //
+    //shows dialog asking if current game should be restarted. pauses timer
+    void showRestartDialog();
+
+    //shows dialog asking to start a new game. pauses timer
+    void showNewGameDialog();
+
+    //shows dialog asking user to quit program. pauses timer
+    void showQuitDialog();
+
+    //shows dialog asking user to return to title screen. pauses timer
+    void showTitleDialog();
+
 private:
     //sets initial attributes for the widget.
     void initializeAttributes();
