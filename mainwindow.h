@@ -8,11 +8,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     //creates main window starting at title screen
-    MainWindow();
+    //@param parent - pointer to parent widget
+    MainWindow(QWidget* parent=nullptr);
 
     //creates a main window
     //@param central - pointer to the central widget of the window
-    MainWindow(QWidget* central);
+    //@param parent - pointer to parent widget
+    MainWindow(QWidget* central, QWidget* parent=nullptr);
 
 public slots:
     //changes window to shisensho screen

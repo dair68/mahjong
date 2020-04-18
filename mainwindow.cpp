@@ -3,13 +3,13 @@
 #include "shisenwidget.h"
 #include <iostream>
 
-MainWindow::MainWindow() {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     QWidget* title = new TitleScreen(this);
-    QMainWindow::setCentralWidget(title);
+    setCentralWidget(title);
     initializeSettings();
 }
 
-MainWindow::MainWindow(QWidget* central) {
+MainWindow::MainWindow(QWidget* central, QWidget* parent) : QMainWindow(parent) {
     QMainWindow::setCentralWidget(central);
     initializeSettings();
 }
@@ -25,8 +25,9 @@ void MainWindow::initializeSettings() {
 }
 
 void MainWindow::toShisensho() {
-    QWidget* shisen = new ShisenWidget(this);
-    this->setCentralWidget(shisen);
+    ShisenWidget* shisen = new ShisenWidget(this);
+    setCentralWidget(shisen);
+    shisen->startGame();
 }
 
 

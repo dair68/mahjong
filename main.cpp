@@ -14,8 +14,8 @@ int main(int argc, char *argv[])
     srand(time(0));
 
     //title screen
-//    MainWindow w;
-//    w.show();
+    MainWindow w;
+    w.show();
 
     //stopwatch
 //    Stopwatch time;
@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
 //    time.start();
 
     //shisensho screen
-    ShisenWidget shisenWin;
-    shisenWin.show();
-    shisenWin.startGame();
+//    ShisenWidget shisenWin;
+//    shisenWin.show();
+//    shisenWin.startGame();
 
     //generating and saving random shisensho games
 //    generateShisenshoGames(50, "small_levels.txt", "small");

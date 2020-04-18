@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <QMenuBar>
 #include "mainwindow.h"
 #include "tile.h"
 #include "shisensho.h"
@@ -92,6 +93,18 @@ public slots:
 
     //
 private:
+    //sets initial attributes for the widget.
+    void initializeAttributes();
+
+    //sets initial attributes for the time display
+    void initializeTimeDisplay();
+
+    //sets initial attributes for the buttons
+    void initializeButtons();
+
+    //creates the menu
+    void createMenu();
+
     Shisensho game;
     Stopwatch timeDisplay;
     unsigned timePenalty;
@@ -107,6 +120,7 @@ private:
     static unsigned tileHeight;
     QPushButton undoButton;
     QPushButton hintButton;
+    QMenuBar menuBar;
 };
 
 #endif // SHISENWIDGET_H

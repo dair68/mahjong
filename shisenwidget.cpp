@@ -17,33 +17,18 @@ unsigned ShisenWidget::tileHeight= 65;
 ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(),
     timeDisplay(this), timePenalty(0), gameStarted(false), drawBackground(false),
     updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
-    gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this) {
+    gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this),
+    menuBar(this) {
 
-    //preventing window erasing to improving painting
-    setAttribute(Qt::WA_StaticContents);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setMinimumSize(1200,800);
-    setMouseTracking(true);
-
-    timeDisplay.setAlignment(Qt::AlignCenter);
-    timeDisplay.resize(200, 100);
-    timeDisplay.move(width() / 2 - timeDisplay.width() / 2, 10);
-    timeDisplay.setStyleSheet("color: white; "
-                              "background-color: green;");
-
-    undoButton.setEnabled(false);
-    hintButton.setEnabled(false);
-
-    int hMargin = 10;
-    int vMargin = 60;
-    undoButton.move(width() / 2 - undoButton.width() - hMargin, height() - vMargin);
-    hintButton.move(width() / 2 + hMargin, height() - vMargin);
-
-    setStyleSheet("font: 12pt;");
+    initializeAttributes();
+    initializeTimeDisplay();
+    initializeButtons();
+    createMenu();
 
     QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
     QObject::connect(&undoButton, &QPushButton::clicked, this, &ShisenWidget::undoButtonHandler);
     QObject::connect(&hintButton, &QPushButton::clicked, this, &ShisenWidget::markRemovableTiles);
+    redrawBackground();
 }
 
 void ShisenWidget::startGame() {
@@ -74,8 +59,8 @@ void ShisenWidget::endGame() {
     hintButton.setEnabled(false);
     QMessageBox gameOverBox;
     QString message = game.tilesLeft() ? "Game Over" : "Congratulations. You won!";
-    gameOverBox.setText(message);
-
+    QString text = "Time: " + timeDisplay.getTime() + "\n" + message;
+    gameOverBox.setText(text);
     QPushButton* retry = nullptr;
 
     //game lost
@@ -166,7 +151,11 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
         qDebug() << "Drawing tiles";
         QBrush brush = QBrush(Qt::darkGreen);
         painter.fillRect(0, 0, width(), height(), brush);
-        drawTiles(painter);
+
+        //drawing tiles if game started
+        if(gameStarted) {
+             drawTiles(painter);
+        }
 
         //delaying to allow painting to catch up, then checking if the game is over
         int milliseconds = 100;
@@ -428,4 +417,39 @@ void ShisenWidget::markRemovableTiles() {
     int milliseconds = 100;
     QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
     hintButton.setEnabled(false);
+}
+
+void ShisenWidget::initializeAttributes() {
+    //preventing window erasing to improving painting
+    setAttribute(Qt::WA_StaticContents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setMinimumSize(1200,900);
+    setMouseTracking(true);
+}
+
+void ShisenWidget::initializeTimeDisplay() {
+    timeDisplay.setAlignment(Qt::AlignCenter);
+    timeDisplay.resize(200, 100);
+    timeDisplay.move(width() / 2 - timeDisplay.width() / 2, 10);
+    timeDisplay.setStyleSheet("color: white; background-color: green; font: 12pt");
+}
+
+void ShisenWidget::initializeButtons() {
+    int hMargin = 10;
+    int vMargin = 60;
+    undoButton.move(width() / 2 - undoButton.width() - hMargin, height() - vMargin);
+    hintButton.move(width() / 2 + hMargin, height() - vMargin);
+
+    undoButton.setEnabled(false);
+    hintButton.setEnabled(false);
+    undoButton.setStyleSheet("font: 12pt");
+    hintButton.setStyleSheet("font: 12pt");
+}
+
+void ShisenWidget::createMenu() {
+    QMenu* menu = menuBar.addMenu("Menu");
+    menu->addAction("Restart game");
+    menu->addAction("New game");
+    menu->addAction("Return to title");
+    menu->addAction("Quit");
 }
