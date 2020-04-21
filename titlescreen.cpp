@@ -23,12 +23,20 @@ TitleScreen::TitleScreen(MainWindow* parent) : QWidget(parent) {
     );
     layout->addWidget(title);
 
-    QPushButton* shisenButton = new QPushButton("Shisen-sho",this);
+    QPushButton* shisenButton = new QPushButton("Play",this);
     connect(shisenButton, SIGNAL(clicked()), parent, SLOT(toShisensho()));
     shisenButton->setStyleSheet(
         "font-size: 22pt;"
     );
+
+    QPushButton* tutorialButton = new QPushButton("How To Play", this);
+    connect(tutorialButton, SIGNAL(clicked()), parent, SLOT(showHelpDialog()));
+    tutorialButton->setStyleSheet(
+        "font-size: 22pt;"
+    );
+
     layout->addWidget(shisenButton);
+    layout->addWidget(tutorialButton);
     layout->addSpacing(200);
 
     this->setLayout(layout);

@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "helpwidget.h"
 #include <QMainWindow>
 
 class MainWindow : public QMainWindow
@@ -23,8 +24,12 @@ public slots:
     //changes central widget to title screen
     void toTitle();
 
+    //shows the help dialg
+    void showHelpDialog();
 private:
     //initializes the dimensions and other attributes of window
     void initializeSettings();
+
+    HelpWidget helpDialog;
 };
 #endif // MAINWINDOW_H

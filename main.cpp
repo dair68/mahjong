@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "shisenwidget.h"
+#include "helpwidget.h"
 #include <QApplication>
 #include <QFile>
 #include <QDir>
@@ -24,9 +25,13 @@ int main(int argc, char *argv[])
 //    time.start();
 
     //shisensho screen
-    ShisenWidget shisenWin;
-    shisenWin.show();
-    shisenWin.startGame();
+//    ShisenWidget shisenWin;
+//    shisenWin.show();
+//    shisenWin.startGame();
+
+    //help widget
+    HelpWidget help;
+    help.show();
 
     //generating and saving random shisensho games
 //    generateShisenshoGames(50, "small_levels.txt", "small");

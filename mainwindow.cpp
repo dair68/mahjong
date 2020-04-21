@@ -3,7 +3,7 @@
 #include "shisenwidget.h"
 #include <iostream>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), helpDialog() {
     QWidget* title = new TitleScreen(this);
     setCentralWidget(title);
     initializeSettings();
@@ -35,5 +35,7 @@ void MainWindow::toTitle() {
     setCentralWidget(title);
 }
 
-
-
+void MainWindow::showHelpDialog() {
+    qDebug() << "help";
+    helpDialog.show();
+}
