@@ -12,6 +12,22 @@
         <file>dim_selected_tiles.png</file>
         <file>dark_tiles.png</file>
         <file>darker_tiles.png</file>
+        <file>pic_1.png</file>
+        <file>screenshot_1.png</file>
+        <file>selected_pic.png</file>
+        <file>mismatch_tiles.png</file>
+        <file>matching_tiles.png</file>
+        <file>test.png</file>
+        <file>match_1.png</file>
+        <file>match_2.png</file>
+        <file>match_3.png</file>
+        <file>match_4.png</file>
+        <file>match_5.png</file>
+        <file>match_6.png</file>
+        <file>special_1.png</file>
+        <file>special_2.png</file>
+        <file>hint.png</file>
+        <file>undo.png</file>
     </qresource>
     <qresource prefix="/levels">
         <file>small_levels.txt</file>

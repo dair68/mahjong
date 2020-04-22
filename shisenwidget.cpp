@@ -408,6 +408,7 @@ void ShisenWidget::startPainting() {
     gameStarted = true;
     redrawBackground();
     timeDisplay.start();
+    hintButton.setEnabled(true);
 }
 
 void ShisenWidget::undoButtonHandler() {
