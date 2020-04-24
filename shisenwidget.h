@@ -15,7 +15,7 @@ class ShisenWidget : public QWidget {
 public:
     //creates shisensho screen
     //@param parent - a parent MainWindow. nullptr by default
-    ShisenWidget(MainWindow* parent=nullptr);
+    ShisenWidget(QWidget* parent=nullptr);
 
     //asks player for a game of custom size, then starts game
     void startGame();
@@ -108,6 +108,10 @@ public slots:
 
     //shows dialog asking user to return to title screen. pauses timer
     void showTitleDialog();
+
+signals:
+    //emit when ready to return to title screen
+    void returnToTitle();
 
 private:
     //sets initial attributes for the widget.

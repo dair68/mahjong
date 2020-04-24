@@ -34,4 +34,7 @@
         <file>medium_levels.txt</file>
         <file>large_levels.txt</file>
     </qresource>
+    <qresource prefix="/songs">
+        <file>David_Szesztay_-_Sweet_Water.mp3</file>
+    </qresource>
 </RCC>

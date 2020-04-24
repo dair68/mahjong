@@ -11,6 +11,8 @@ HelpWidget::HelpWidget(QWidget* parent) : QTabWidget(parent) {
     createRemoveTab();
     createSpecialTab();
     createToolsTab();
+
+    setAttribute( Qt::WA_DeleteOnClose, true );
 }
 
 void HelpWidget::createOverviewTab() {

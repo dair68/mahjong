@@ -14,7 +14,7 @@
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
 
-ShisenWidget::ShisenWidget(MainWindow* parent) : QWidget(parent), game(),
+ShisenWidget::ShisenWidget(QWidget* parent) : QWidget(parent), game(),
     timeDisplay(this), timePenalty(0), gameStarted(false), drawBackground(false),
     updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
     gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this),
@@ -513,7 +513,7 @@ void ShisenWidget::showTitleDialog() {
     switch (ret) {
       //yes clicked, restarting game
       case QMessageBox::Yes:
-          ((MainWindow*) parent())->toTitle();
+          emit returnToTitle();
           break;
       //no clicked, resuming game
       case QMessageBox::No:
@@ -561,11 +561,8 @@ void ShisenWidget::createMenu() {
     QAction* newGame = menu->addAction("New game");
     QObject::connect(newGame, &QAction::triggered, this, &ShisenWidget::showNewGameDialog);
 
-    //has parent widget
-    if(parent() != nullptr) {
-       QAction* title = menu->addAction("Return to title");
-       QObject::connect(title, &QAction::triggered, this, &ShisenWidget::showTitleDialog);
-    }
+    QAction* title = menu->addAction("Return to title");
+    QObject::connect(title, &QAction::triggered, this, &ShisenWidget::showTitleDialog);
 
     QAction* quit = menu->addAction("Quit");
     QObject::connect(quit, &QAction::triggered, this, &ShisenWidget::showQuitDialog);

@@ -2,14 +2,24 @@
 #define TITLESCREEN_H
 
 #include <QWidget>
-#include "mainwindow.h"
 
 class TitleScreen : public QWidget
 {
+    Q_OBJECT
 public:
     //creates title screen
     //@param parent - pointer to parent widget
-    TitleScreen(MainWindow* parent=nullptr);
+    TitleScreen(QWidget* parent=nullptr);
+
+    //overriding paint event for stylesheet purposes
+    void paintEvent(QPaintEvent *event) override;
+
+signals:
+    //emit when play button clicked
+    void playButtonClicked();
+
+    //emit when tutorial button clicked
+    void tutorialButtonClicked();
 };
 
 #endif // TITLESCREEN_H

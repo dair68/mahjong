@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "shisenwidget.h"
 #include "helpwidget.h"
+#include "titlescreen.h"
 #include <QApplication>
 #include <QFile>
 #include <QDir>
@@ -14,9 +15,13 @@ int main(int argc, char *argv[])
     //setting seed for random tiles
     srand(time(0));
 
+    //main window
+    MainWindow w;
+    w.show();
+
     //title screen
-//    MainWindow w;
-//    w.show();
+//    TitleScreen title;
+//    title.show();
 
     //stopwatch
 //    Stopwatch time;
@@ -30,8 +35,8 @@ int main(int argc, char *argv[])
 //    shisenWin.startGame();
 
     //help widget
-    HelpWidget help;
-    help.show();
+//    HelpWidget help;
+//    help.show();
 
     //generating and saving random shisensho games
 //    generateShisenshoGames(50, "small_levels.txt", "small");
