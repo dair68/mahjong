@@ -17,21 +17,30 @@ unsigned ShisenWidget::tileHeight= 65;
 ShisenWidget::ShisenWidget(QWidget* parent) : QWidget(parent), game(),
     timeDisplay(this), timePenalty(0), gameStarted(false), drawBackground(false),
     updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
-    gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this),
-    menuBar(this) {
+    gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this), menu(this) {
 
     initializeAttributes();
     initializeTimeDisplay();
     initializeButtons();
-    createMenu();
 
-    QObject::connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
-    QObject::connect(&undoButton, &QPushButton::clicked, this, &ShisenWidget::undoButtonHandler);
-    QObject::connect(&hintButton, &QPushButton::clicked, this, &ShisenWidget::markRemovableTiles);
+    connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
+    connect(&undoButton, &QPushButton::clicked, this, &ShisenWidget::undoButtonHandler);
+    connect(&hintButton, &QPushButton::clicked, this, &ShisenWidget::markRemovableTiles);
+    connect(&menu, &ShisenMenu::modalCreated, &timeDisplay, &Stopwatch::stop);
+    connect(&menu, &ShisenMenu::noSelected, &timeDisplay, &Stopwatch::start);
+    connect(&menu, &ShisenMenu::helpSelected, this, &ShisenWidget::showHelp);
+    connect(&menu, &ShisenMenu::returnToTitleSelected, this, &ShisenWidget::returnToTitle);
+    connect(&menu, &ShisenMenu::restartSelected, this, &ShisenWidget::restartGame);
+    connect(&menu, &ShisenMenu::newGameSelected, this, &ShisenWidget::startNewGame);
     redrawBackground();
 }
 
-void ShisenWidget::startGame() {
+void ShisenWidget::startNewGame() {
+    reset();
+    showNewGameDialog();
+}
+
+void ShisenWidget::showNewGameDialog() {
     //getting game dimensions
     bool ok;
     QStringList options = {"Small (12x5)", "Medium (14x6)", "Large (18x8)"};
@@ -40,6 +49,7 @@ void ShisenWidget::startGame() {
 
     qDebug() << gameDim;
 
+    //game size selected
     if (ok) {
         QStringList optionParts = gameDim.split(' ');
         QString size = optionParts[0].toLower();
@@ -49,7 +59,10 @@ void ShisenWidget::startGame() {
         gridX = (width() - tileWidth*game.getCols())/2;
         gridY = (height() - tileHeight*game.getRows())/2;
         hintButton.setEnabled(true);
-        //time.start();
+    }
+    //cancel button clicked. emitting title screen signal
+    else {
+        emit returnToTitle();
     }
 }
 
@@ -78,8 +91,7 @@ void ShisenWidget::showGameOverDialog() {
     //new game clicked
     if(gameOverBox.clickedButton() == newGame) {
         qDebug() << "New Game";
-        reset();
-        startGame();
+        startNewGame();
     }
     //try again clicked
     else if(gameOverBox.clickedButton() == retry) {
@@ -105,7 +117,7 @@ void ShisenWidget::checkGameStatus() {
 void ShisenWidget::reset() {
     game.clearTiles();
     gameStarted = false;
-    drawBackground = false;
+  //  drawBackground = false;
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
     path.clear();
@@ -429,103 +441,6 @@ void ShisenWidget::markRemovableTiles() {
     hintButton.setEnabled(false);
 }
 
-void ShisenWidget::showRestartDialog() {
-    timeDisplay.stop();
-    QMessageBox dialog;
-    dialog.setText("Restart the current game?");
-    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    int ret = dialog.exec();
-
-    //different button cases
-    switch (ret) {
-      //yes clicked, restarting game
-      case QMessageBox::Yes:
-          restartGame();
-          break;
-      //no clicked, resuming game
-      case QMessageBox::No:
-          timeDisplay.start();
-          break;
-      //default case. error occured
-      default:
-          qDebug() << "invalid response";
-          break;
-    }
-}
-
-void ShisenWidget::showNewGameDialog() {
-    timeDisplay.stop();
-    QMessageBox dialog;
-    dialog.setText("Start a new game?");
-    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    int ret = dialog.exec();
-
-    //different button cases
-    switch (ret) {
-      //yes clicked, restarting game
-      case QMessageBox::Yes:
-          reset();
-          startGame();
-          break;
-      //no clicked, resuming game
-      case QMessageBox::No:
-          timeDisplay.start();
-          break;
-      //default case. error occured
-      default:
-          qDebug() << "invalid response";
-          break;
-    }
-}
-
-void ShisenWidget::showQuitDialog() {
-    timeDisplay.stop();
-    QMessageBox dialog;
-    dialog.setText("Are you sure you want to quit?");
-    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    int ret = dialog.exec();
-
-    //different button cases
-    switch (ret) {
-      //yes clicked, restarting game
-      case QMessageBox::Yes:
-          QApplication::quit();
-          break;
-      //no clicked, resuming game
-      case QMessageBox::No:
-          timeDisplay.start();
-          break;
-      //default case. error occured
-      default:
-          qDebug() << "invalid response";
-          break;
-    }
-}
-
-void ShisenWidget::showTitleDialog() {
-    timeDisplay.stop();
-    QMessageBox dialog;
-    dialog.setText("Return to title screen?");
-    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    int ret = dialog.exec();
-
-    //different button cases
-    switch (ret) {
-      //yes clicked, restarting game
-      case QMessageBox::Yes:
-          emit returnToTitle();
-          break;
-      //no clicked, resuming game
-      case QMessageBox::No:
-          timeDisplay.start();
-          break;
-      //default case. error occured
-      default:
-          qDebug() << "invalid response";
-          break;
-    }
-}
-
 void ShisenWidget::initializeAttributes() {
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -551,19 +466,4 @@ void ShisenWidget::initializeButtons() {
     hintButton.setEnabled(false);
     undoButton.setStyleSheet("font: 12pt");
     hintButton.setStyleSheet("font: 12pt");
-}
-
-void ShisenWidget::createMenu() {
-    QMenu* menu = menuBar.addMenu("Menu");
-    QAction* restart = menu->addAction("Restart game");
-    QObject::connect(restart, &QAction::triggered, this, &ShisenWidget::showRestartDialog);
-
-    QAction* newGame = menu->addAction("New game");
-    QObject::connect(newGame, &QAction::triggered, this, &ShisenWidget::showNewGameDialog);
-
-    QAction* title = menu->addAction("Return to title");
-    QObject::connect(title, &QAction::triggered, this, &ShisenWidget::showTitleDialog);
-
-    QAction* quit = menu->addAction("Quit");
-    QObject::connect(quit, &QAction::triggered, this, &ShisenWidget::showQuitDialog);
 }

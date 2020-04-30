@@ -4,6 +4,7 @@
 #include <QTabWidget>
 
 class HelpWidget : public QTabWidget {
+    Q_OBJECT
 public:
     //creates shisensho help dialog
     //@param parent - pointer to parent widget

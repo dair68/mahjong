@@ -3,7 +3,7 @@
 #include "shisenwidget.h"
 #include <iostream>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help() {
     QString tilePath = ":/images/MJt1-.svg.png";
     setWindowIcon(QIcon(tilePath));
 
@@ -19,7 +19,8 @@ void MainWindow::toShisensho() {
     ShisenWidget* shisen = new ShisenWidget(this);
     setCentralWidget(shisen);
     connect(shisen, &ShisenWidget::returnToTitle, this, &MainWindow::toTitle);
-    shisen->startGame();
+    connect(shisen, &ShisenWidget::showHelp, &help, &QWidget::show);
+    shisen->startNewGame();
 }
 
 void MainWindow::toTitle() {
@@ -27,13 +28,7 @@ void MainWindow::toTitle() {
     setCentralWidget(title);
 
     connect(title, &TitleScreen::playButtonClicked, this, &MainWindow::toShisensho);
-    connect(title, &TitleScreen::tutorialButtonClicked, this, &MainWindow::showHelpDialog);
+    connect(title, &TitleScreen::tutorialButtonClicked, &help, &QWidget::show);
 
     emit enteredTitleScreen();
-}
-
-void MainWindow::showHelpDialog() {
-    qDebug() << "help";
-    HelpWidget* helpDialog = new HelpWidget();
-    helpDialog->show();
 }

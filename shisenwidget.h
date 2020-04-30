@@ -4,21 +4,24 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
-#include <QMenuBar>
 #include "mainwindow.h"
 #include "tile.h"
 #include "shisensho.h"
 #include "stopwatch.h"
+#include "shisenmenu.h"
 
 class ShisenWidget : public QWidget {
     Q_OBJECT
 public:
     //creates shisensho screen
-    //@param parent - a parent MainWindow. nullptr by default
+    //@param parent - pointer to parent widget
     ShisenWidget(QWidget* parent=nullptr);
 
-    //asks player for a game of custom size, then starts game
-    void startGame();
+    //asks player for a game of custom size, then starts game. existing game removed.
+    void startNewGame();
+
+    //shows dialog asking for game dimensions. game begins promptly after selection
+    void showNewGameDialog();
 
     //stops the game
     void endGame();
@@ -91,27 +94,18 @@ public slots:
     //checks if the game is over and ends things accordingly if so
     void checkGameStatus();
 
-    //restores last 2 tiles if undo mode, removes last 2 tiles if redo mode
+    //restores last 2 tiles removed, if possible
     void undoButtonHandler();
 
     //highlights the currently removable tiles and incurs 1 minute time penalty
     void markRemovableTiles();
 
-    //shows dialog asking if current game should be restarted. pauses timer
-    void showRestartDialog();
-
-    //shows dialog asking to start a new game. pauses timer
-    void showNewGameDialog();
-
-    //shows dialog asking user to quit program. pauses timer
-    void showQuitDialog();
-
-    //shows dialog asking user to return to title screen. pauses timer
-    void showTitleDialog();
-
 signals:
     //emit when ready to return to title screen
     void returnToTitle();
+
+    //emit when help button in menu clicked
+    void showHelp();
 
 private:
     //sets initial attributes for the widget.
@@ -122,9 +116,6 @@ private:
 
     //sets initial attributes for the buttons
     void initializeButtons();
-
-    //creates the menu
-    void createMenu();
 
     Shisensho game;
     Stopwatch timeDisplay;
@@ -141,7 +132,7 @@ private:
     static unsigned tileHeight;
     QPushButton undoButton;
     QPushButton hintButton;
-    QMenuBar menuBar;
+    ShisenMenu menu;
 };
 
 #endif // SHISENWIDGET_H

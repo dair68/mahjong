@@ -19,6 +19,7 @@ SOURCES += \
     helpwidget.cpp \
     main.cpp \
     mainwindow.cpp \
+    shisenmenu.cpp \
     shisensho.cpp \
     shisenwidget.cpp \
     space.cpp \
@@ -29,6 +30,7 @@ SOURCES += \
 HEADERS += \
     helpwidget.h \
     mainwindow.h \
+    shisenmenu.h \
     shisensho.h \
     shisenwidget.h \
     space.h \

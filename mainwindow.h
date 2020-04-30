@@ -20,12 +20,12 @@ public slots:
     //changes central widget to title screen
     void toTitle();
 
-    //shows the help dialg
-    void showHelpDialog();
-
 signals:
     //set central widget to title screen
     void enteredTitleScreen();
+
+private:
+    HelpWidget help;
 };
 
 #endif // MAINWINDOW_H
