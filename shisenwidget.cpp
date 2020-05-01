@@ -85,9 +85,8 @@ void ShisenWidget::showGameOverDialog() {
     }
 
     QPushButton* newGame = gameOverBox.addButton("New Game", QMessageBox::YesRole);
-    QPushButton* quit = gameOverBox.addButton("Quit", QMessageBox::NoRole);
+    QPushButton* quit = gameOverBox.addButton("Return To Title", QMessageBox::NoRole);
     gameOverBox.exec();
-
     //new game clicked
     if(gameOverBox.clickedButton() == newGame) {
         qDebug() << "New Game";
@@ -99,8 +98,9 @@ void ShisenWidget::showGameOverDialog() {
     }
     //quitting
     else {
-        qDebug() << "Quit";
-        QApplication::quit();
+//        qDebug() << "Quit";
+//        QApplication::quit();
+        emit returnToTitle();
     }
 }
 

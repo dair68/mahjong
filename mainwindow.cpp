@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "titlescreen.h"
 #include "shisenwidget.h"
-#include <iostream>
+#include <QDebug>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help() {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
+    help(), player(), playlist() {
     QString tilePath = ":/images/MJt1-.svg.png";
     setWindowIcon(QIcon(tilePath));
 
@@ -29,6 +32,18 @@ void MainWindow::toTitle() {
 
     connect(title, &TitleScreen::playButtonClicked, this, &MainWindow::toShisensho);
     connect(title, &TitleScreen::tutorialButtonClicked, &help, &QWidget::show);
-
     emit enteredTitleScreen();
+
+    playTitleTheme();
+}
+
+void MainWindow::playTitleTheme() {
+    qDebug() << "playing music";
+   // playlist.setPlaybackMode(QMediaPlaylist::Loop);
+    playlist.addMedia(QUrl("qrc:/songs/David_Szesztay_-_Sweet_Water.mp3"));
+    playlist.setCurrentIndex(1);
+
+    player.setPlaylist(&playlist);
+    player.setVolume(50);
+    player.play();
 }
