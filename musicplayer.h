@@ -15,6 +15,15 @@ public slots:
     //plays title theme one time
     void playTitleTheme();
 
+    //loops theme song for main game screen
+    void playGameTheme();
+
+    //pauses player
+    void pause();
+
+    //resumes playing the current song
+    void resume();
+
 private:
     QMediaPlayer player;
     QMediaPlaylist playlist;

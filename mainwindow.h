@@ -23,7 +23,11 @@ public slots:
     void toTitle();
 
 signals:
+    //emit when central widget is title screen
     void enteredTitleScreen();
+
+    //emit central widget is shisen widget
+    void enteredShisenScreen();
 
 private:
     HelpWidget help;

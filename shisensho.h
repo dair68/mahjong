@@ -178,6 +178,7 @@ public:
 signals:
     //emit when the object has initialized all the tiles
     void gameInitialized();
+
 private:
     //turns this object into a deep copy
     //@param game - shisensho game to copy

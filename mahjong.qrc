@@ -37,5 +37,6 @@
     <qresource prefix="/songs">
         <file>David_Szesztay_-_Sweet_Water.mp3</file>
         <file>Podington_Bear_-_Frogs.mp3</file>
+        <file>Podington_Bear_-_Frogs - Copy.mp3</file>
     </qresource>
 </RCC>

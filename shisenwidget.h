@@ -107,6 +107,18 @@ signals:
     //emit when help button in menu clicked
     void showHelp();
 
+    //emit when a game of shisensho has begun
+    void gameHasBegun();
+
+    //emit when a modal dialog on screen
+    void gamePaused();
+
+    //emit when modal dialog closed without selecting options
+    void gameResumed();
+
+    //emit when game has ended
+    void gameOver();
+
 private:
     //sets initial attributes for the widget.
     void initializeAttributes();

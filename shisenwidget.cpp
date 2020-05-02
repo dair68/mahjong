@@ -32,6 +32,8 @@ ShisenWidget::ShisenWidget(QWidget* parent) : QWidget(parent), game(),
     connect(&menu, &ShisenMenu::returnToTitleSelected, this, &ShisenWidget::returnToTitle);
     connect(&menu, &ShisenMenu::restartSelected, this, &ShisenWidget::restartGame);
     connect(&menu, &ShisenMenu::newGameSelected, this, &ShisenWidget::startNewGame);
+    connect(&menu, &ShisenMenu::modalCreated, this, &ShisenWidget::gamePaused);
+    connect(&menu, &ShisenMenu::noSelected, this, &ShisenWidget::gameResumed);
     redrawBackground();
 }
 
@@ -59,6 +61,7 @@ void ShisenWidget::showNewGameDialog() {
         gridX = (width() - tileWidth*game.getCols())/2;
         gridY = (height() - tileHeight*game.getRows())/2;
         hintButton.setEnabled(true);
+        emit gameHasBegun();
     }
     //cancel button clicked. emitting title screen signal
     else {
@@ -110,6 +113,7 @@ void ShisenWidget::checkGameStatus() {
         qDebug() << "ending game";
         gameStarted = false;
         endGame();
+        emit gameOver();
         showGameOverDialog();
     }
 }
@@ -131,6 +135,7 @@ void ShisenWidget::restartGame() {
     reset();
     game.resetTiles();
     startPainting();
+    emit gameHasBegun();
 }
 
 void ShisenWidget::paintEvent(QPaintEvent *event) {

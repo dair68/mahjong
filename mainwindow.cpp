@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help(), player() 
     setFixedSize(width, height);
 
     connect(this, &MainWindow::enteredTitleScreen, &player, &MusicPlayer::playTitleTheme);
+    connect(this, &MainWindow::enteredShisenScreen, &player, &MusicPlayer::pause);
 
     toTitle();
 }
@@ -22,8 +23,14 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help(), player() 
 void MainWindow::toShisensho() {
     ShisenWidget* shisen = new ShisenWidget(this);
     setCentralWidget(shisen);
+    emit enteredShisenScreen();
+
     connect(shisen, &ShisenWidget::returnToTitle, this, &MainWindow::toTitle);
     connect(shisen, &ShisenWidget::showHelp, &help, &QWidget::show);
+    connect(shisen, &ShisenWidget::gameHasBegun, &player, &MusicPlayer::playGameTheme);
+    connect(shisen, &ShisenWidget::gamePaused, &player, &MusicPlayer::pause);
+    connect(shisen, &ShisenWidget::gameResumed, &player, &MusicPlayer::resume);
+    connect(shisen, &ShisenWidget::gameOver, &player, &MusicPlayer::pause);
     shisen->startNewGame();
 }
 
