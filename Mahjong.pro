@@ -20,6 +20,7 @@ SOURCES += \
     helpwidget.cpp \
     main.cpp \
     mainwindow.cpp \
+    musicplayer.cpp \
     shisenmenu.cpp \
     shisensho.cpp \
     shisenwidget.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 HEADERS += \
     helpwidget.h \
     mainwindow.h \
+    musicplayer.h \
     shisenmenu.h \
     shisensho.h \
     shisenwidget.h \

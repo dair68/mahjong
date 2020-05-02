@@ -5,8 +5,7 @@
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
-    help(), player(), playlist() {
+MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help(), player() {
     QString tilePath = ":/images/MJt1-.svg.png";
     setWindowIcon(QIcon(tilePath));
 
@@ -14,6 +13,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent),
     int width = 4 * scale;
     int height = 3 * scale;
     setFixedSize(width, height);
+
+    connect(this, &MainWindow::enteredTitleScreen, &player, &MusicPlayer::playTitleTheme);
 
     toTitle();
 }
@@ -29,21 +30,8 @@ void MainWindow::toShisensho() {
 void MainWindow::toTitle() {
     TitleScreen* title = new TitleScreen(this);
     setCentralWidget(title);
+    emit enteredTitleScreen();
 
     connect(title, &TitleScreen::playButtonClicked, this, &MainWindow::toShisensho);
     connect(title, &TitleScreen::tutorialButtonClicked, &help, &QWidget::show);
-    emit enteredTitleScreen();
-
-    playTitleTheme();
-}
-
-void MainWindow::playTitleTheme() {
-    qDebug() << "playing music";
-   // playlist.setPlaybackMode(QMediaPlaylist::Loop);
-    playlist.addMedia(QUrl("qrc:/songs/David_Szesztay_-_Sweet_Water.mp3"));
-    playlist.setCurrentIndex(1);
-
-    player.setPlaylist(&playlist);
-    player.setVolume(50);
-    player.play();
 }

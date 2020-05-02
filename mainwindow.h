@@ -3,20 +3,17 @@
 
 #include "helpwidget.h"
 #include "titlescreen.h"
+#include "musicplayer.h"
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     //creates main window starting at title screen
     //@param parent - pointer to parent widget
     MainWindow(QWidget* parent=nullptr);
-
-    //plays the title theme
-    void playTitleTheme();
 
 public slots:
     //changes window to shisensho screen
@@ -26,13 +23,11 @@ public slots:
     void toTitle();
 
 signals:
-    //set central widget to title screen
     void enteredTitleScreen();
 
 private:
     HelpWidget help;
-    QMediaPlayer player;
-    QMediaPlaylist playlist;
+    MusicPlayer player;
 };
 
 #endif // MAINWINDOW_H
