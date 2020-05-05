@@ -39,4 +39,9 @@
         <file>Podington_Bear_-_Frogs.mp3</file>
         <file>Podington_Bear_-_Frogs - Copy.mp3</file>
     </qresource>
+    <qresource prefix="/sounds">
+        <file>478197__jonnyruss01__click-1.wav</file>
+        <file>209917__veiler__gong-sabi-2.wav</file>
+        <file>472707__neolein__guzheng-solo-trimmed.wav</file>
+    </qresource>
 </RCC>

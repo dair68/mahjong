@@ -3,13 +3,12 @@
 #include <cmath>
 #include <QMouseEvent>
 #include <QDebug>
-#include <QTimer>
 #include <QHBoxLayout>
 #include <QInputDialog>
-#include <sstream>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QApplication>
+#include <QSound>
 
 unsigned ShisenWidget::tileWidth = 54;
 unsigned ShisenWidget::tileHeight= 65;
@@ -81,10 +80,16 @@ void ShisenWidget::showGameOverDialog() {
     QMessageBox gameOverBox;
     gameOverBox.setText(text);
     QPushButton* retry = nullptr;
+    QSound winJingle(":/sounds/472707__neolein__guzheng-solo-trimmed.wav");
+    QSound loseJingle(":/sounds/209917__veiler__gong-sabi-2.wav");
 
     //game lost
     if(game.tilesLeft()) {
         retry = gameOverBox.addButton("Try Again", QMessageBox::YesRole);
+        loseJingle.play();
+    }
+    else {
+        winJingle.play();
     }
 
     QPushButton* newGame = gameOverBox.addButton("New Game", QMessageBox::YesRole);
@@ -93,16 +98,19 @@ void ShisenWidget::showGameOverDialog() {
     //new game clicked
     if(gameOverBox.clickedButton() == newGame) {
         qDebug() << "New Game";
+        loseJingle.stop();
         startNewGame();
     }
     //try again clicked
     else if(gameOverBox.clickedButton() == retry) {
+        loseJingle.stop();
         restartGame();
     }
     //quitting
     else {
 //        qDebug() << "Quit";
 //        QApplication::quit();
+        loseJingle.stop();
         emit returnToTitle();
     }
 }
@@ -168,7 +176,7 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
 
         //adding delay before tiles removed
         drawBackground = false;
-        int milliseconds = 200;
+        int milliseconds = 100;
         QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
     }
 
@@ -357,6 +365,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
 
     //checking if tile needs to be updated
     if(!game.spaceEmpty(clickedSpace) && !game.isOver()) {
+        QSound::play(":/sounds/478197__jonnyruss01__click-1.wav");
         std::vector<std::vector<const Tile*>> tiles = game.getTiles();
         const Tile& clickedTile = *tiles[clickedSpace.col][clickedSpace.row];
 
