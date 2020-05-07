@@ -14,6 +14,10 @@ public:
     //overriding paint event for stylesheet purposes
     void paintEvent(QPaintEvent *event) override;
 
+public slots:
+    //shows the quit dialog
+    void showQuitDialog();
+
 signals:
     //emit when play button clicked
     void playButtonClicked();

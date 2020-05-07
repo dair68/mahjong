@@ -6,6 +6,8 @@
 #include <QFontDatabase>
 #include <QStyleOption>
 #include <QPainter>
+#include <QMessageBox>
+#include <QApplication>
 
 TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
     QLabel* title = new QLabel("Mahjong", this);
@@ -36,6 +38,7 @@ TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
     connect(creditsButton, &QPushButton::clicked, this, &TitleScreen::creditsButtonClicked);
 
     QPushButton* quitButton = new QPushButton("Quit", this);
+    connect(quitButton, SIGNAL(clicked()), this, SLOT(showQuitDialog()));
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setAlignment(Qt::AlignHCenter);
@@ -54,4 +57,20 @@ void TitleScreen::paintEvent(QPaintEvent *event) {
     opt.init(this);
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
+void TitleScreen::showQuitDialog() {
+    QMessageBox dialog;
+    dialog.setText("Are you sure you want to quit?");
+    dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int ret = dialog.exec();
+
+    //quitting if applicable
+    switch (ret) {
+        case QMessageBox::Yes:
+            QApplication::quit();
+            break;
+        default:
+            break;
+    }
 }
