@@ -7,6 +7,7 @@
 #include <QDir>
 #include <iostream>
 #include "stopwatch.h"
+#include "creditswidget.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +19,10 @@ int main(int argc, char *argv[])
     //main window
     MainWindow w;
     w.show();
+
+    //credits
+//    CreditsWidget credits;
+//    credits.show();
 
     //title screen
 //    TitleScreen title;

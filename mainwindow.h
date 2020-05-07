@@ -22,6 +22,9 @@ public slots:
     //changes central widget to title screen along with music
     void toTitle();
 
+    //changes central widget to credits screen
+    void toCredits();
+
 signals:
     //emit when central widget is title screen
     void enteredTitleScreen();

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "titlescreen.h"
 #include "shisenwidget.h"
+#include "creditswidget.h"
 #include <QDebug>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
@@ -14,9 +15,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help(), player() 
     int height = 3 * scale;
     setFixedSize(width, height);
 
-    connect(this, &MainWindow::enteredTitleScreen, &player, &MusicPlayer::playTitleTheme);
     connect(this, &MainWindow::enteredShisenScreen, &player, &MusicPlayer::pause);
-
+    player.playTitleTheme();
     toTitle();
 }
 
@@ -26,6 +26,7 @@ void MainWindow::toShisensho() {
     emit enteredShisenScreen();
 
     connect(shisen, &ShisenWidget::returnToTitle, this, &MainWindow::toTitle);
+    connect(shisen, SIGNAL(returnToTitle()), &player, SLOT(playTitleTheme()));
     connect(shisen, &ShisenWidget::showHelp, &help, &QWidget::show);
     connect(shisen, &ShisenWidget::gameHasBegun, &player, &MusicPlayer::playGameTheme);
     connect(shisen, &ShisenWidget::gamePaused, &player, &MusicPlayer::pause);
@@ -41,4 +42,11 @@ void MainWindow::toTitle() {
 
     connect(title, &TitleScreen::playButtonClicked, this, &MainWindow::toShisensho);
     connect(title, &TitleScreen::tutorialButtonClicked, &help, &QWidget::show);
+    connect(title, &TitleScreen::creditsButtonClicked, this, &MainWindow::toCredits);
+}
+
+void MainWindow::toCredits() {
+    CreditsWidget* credits = new CreditsWidget(this);
+    setCentralWidget(credits);
+    connect(credits, SIGNAL(backButtonClicked()), this, SLOT(toTitle()));
 }

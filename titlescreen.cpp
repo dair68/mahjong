@@ -32,13 +32,20 @@ TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
     QPushButton* tutorialButton = new QPushButton("How To Play", this);
     connect(tutorialButton, &QPushButton::clicked, this, &TitleScreen::tutorialButtonClicked);
 
-    QVBoxLayout* layout = new QVBoxLayout;
+    QPushButton* creditsButton = new QPushButton("Credits", this);
+    connect(creditsButton, &QPushButton::clicked, this, &TitleScreen::creditsButtonClicked);
+
+    QPushButton* quitButton = new QPushButton("Quit", this);
+
+    QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setAlignment(Qt::AlignHCenter);
 
     layout->addWidget(title);
     layout->addWidget(shisenButton);
     layout->addWidget(tutorialButton);
-    layout->addSpacing(200);
+    layout->addWidget(creditsButton);
+    layout->addWidget(quitButton);
+    layout->addSpacing(100);
     setLayout(layout);
 }
 

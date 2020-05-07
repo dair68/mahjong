@@ -20,6 +20,9 @@ signals:
 
     //emit when tutorial button clicked
     void tutorialButtonClicked();
+
+    //emit when credits button clicked
+    void creditsButtonClicked();
 };
 
 #endif // TITLESCREEN_H
