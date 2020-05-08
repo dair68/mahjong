@@ -1,42 +1,24 @@
 #include "shisensho.h"
 #include "space.h"
-#include <fstream>
 #include <QRegularExpression>
 #include <QFile>
 #include <QDir>
-#include <vector>
-#include <QPainter>
-#include <ctime>
 #include <cassert>
 #include <QDebug>
 
 Shisensho::Shisensho() : cols(12), rows(5), selectedTiles(), recentSpaces(),
     recentTiles(2, nullptr) {
-    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
-
-    //creating empty grid
-    for(int i=0; i<cols; i++) {
-        for(int j=0; j<rows; j++) {
-            tiles[i][j] = nullptr;
-        }
-    }
-
+    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows, nullptr));
     tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
-Shisensho::Shisensho(const unsigned numCols, const unsigned numRows)
-    : cols(numCols), rows(numRows), selectedTiles() {
+Shisensho::Shisensho(const unsigned& numCols, const unsigned& numRows) :
+    selectedTiles(), recentTiles(), recentSpaces() {
     assert((cols * rows) % 2 == 0);
 
-    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows));
-
-    //creating empty grid
-    for(int i=0; i<cols; i++) {
-        for(int j=0; j<rows; j++) {
-            tiles[i][j] = nullptr;
-        }
-    }
-
+    cols = numCols;
+    rows = numRows;
+    tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows, nullptr));
     tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
@@ -89,6 +71,15 @@ void Shisensho::clearTiles() {
             }
         }
     }
+
+    //clearing recent tiles
+    for(Tile* tile : recentTiles) {
+        //tile to be deleted
+        if(tile != nullptr) {
+            delete tile;
+            tile = nullptr;
+        }
+    }
 }
 
 std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
@@ -101,8 +92,6 @@ std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
             if(tiles[i][j] != nullptr) {
                 Tile* tile = tiles[i][j];
                 unsigned id = tile->getId();
-                struct Space space = {i, j};
-                assert(tiles[space.col][space.row]);
 
                 //all flower tiles assigned id of 7
                 if(7 <= id && id <= 10) {
@@ -113,6 +102,7 @@ std::map<unsigned, std::vector<struct Space>> Shisensho::getTileMap() const {
                     id = 11;
                 }
 
+                const struct Space space = {i, j};
                 auto iter = tileMap.find(id);
 
                 //key found
@@ -143,7 +133,7 @@ bool Shisensho::isWinnable() const {
     while(copy.hasRemovableTiles()) {
         qDebug() << "pruning";
         //qDebug() << numTiles << "tiles left";
-        std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
+        const std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
 
         //searching for pairs of removable tiles to do not affect game outcome
         for(auto& [id, spaces] : tileMap) {
@@ -152,8 +142,8 @@ bool Shisensho::isWinnable() const {
             //only 2 of a given tile
             if(spaces.size() == 2) {
                 //qDebug() << spaces.size();
-                struct Space space1 = spaces[0];
-                struct Space space2 = spaces[1];
+                const struct Space space1 = spaces[0];
+                const struct Space space2 = spaces[1];
 
                 //tiles removable; removing them
                 if(copy.removableTiles(space1, space2)) {
@@ -164,21 +154,21 @@ bool Shisensho::isWinnable() const {
             //4 of a given tile
             else {
                 //qDebug() << spaces.size();
-                std::vector<std::vector<unsigned>> partitionIndexes = {{0,1}, {0,2}, {0,3}};
+                const std::vector<std::vector<unsigned>> partitionIndexes = {{0,1}, {0,2}, {0,3}};
 
                 //examining different pairs of spaces
                 for(std::vector<unsigned> indexes : partitionIndexes) {
                    struct std::pair<std::vector<struct Space>, std::vector<struct Space>> spaceVects;
                    spaceVects = partition(spaces, indexes);
 
-                   std::vector<struct Space> spacePair1 = spaceVects.first;
-                   struct Space spaceA = spacePair1[0];
+                   const std::vector<struct Space> spacePair1 = spaceVects.first;
+                   const struct Space spaceA = spacePair1[0];
                    //qDebug() << tiles[spaceA.col][spaceA.row]->getId();
-                   struct Space spaceB = spacePair1[1];
+                   const struct Space spaceB = spacePair1[1];
 
-                   std::vector<struct Space> spacePair2 = spaceVects.second;
-                   struct Space spaceC = spacePair2[0];
-                   struct Space spaceD = spacePair2[1];
+                   const std::vector<struct Space> spacePair2 = spaceVects.second;
+                   const struct Space spaceC = spacePair2[0];
+                   const struct Space spaceD = spacePair2[1];
 
                    //possible to remove all 4 tiles
                    if(copy.removableTiles(spaceA, spaceB) && copy.removableTiles(spaceC, spaceD)) {
@@ -208,15 +198,15 @@ bool Shisensho::isWinnable() const {
         return true;
     }
 
-    std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
+    const std::map<unsigned, std::vector<struct Space>> tileMap = copy.getTileMap();
 
     //searching for any pair of removable tiles, including those that might end game prematurely
     for(auto& [id, spaces] : tileMap) {
         //trying to remove different pairs of tiles
         for(int a=0; a<spaces.size()-1; a++) {
             for(int b=a+1; b<spaces.size(); b++) {
-                struct Space space1 = spaces[a];
-                struct Space space2 = spaces[b];
+                const struct Space space1 = spaces[a];
+                const struct Space space2 = spaces[b];
 
                 //removable tiles
                 if(copy.removableTiles(space1, space2)) {
@@ -239,7 +229,7 @@ bool Shisensho::isWinnable() const {
 
 void Shisensho::createTiles() {
     qDebug() << "creating tiles";
-    int tilePairs = (cols * rows) / 2;
+    const int tilePairs = (cols * rows) / 2;
     std::list<Tile> tileSet = createMahjongSet();
     int pairs = 0;
 
@@ -280,10 +270,10 @@ void Shisensho::createTiles() {
 }
 
 void Shisensho::configRandomLevel(const QString& filename) {
-    QString levelData = selectRandomLevel(filename);
+    const QString levelData = selectRandomLevel(filename);
 
-    QString columnData = levelData.mid(2, levelData.size() - 4);
-    QStringList columns = columnData.split(QRegularExpression("\\],\\["));
+    const QString columnData = levelData.mid(2, levelData.size() - 4);
+    const QStringList columns = columnData.split(QRegularExpression("\\],\\["));
     qDebug() << columns;
 
     cols = columns.size();
@@ -295,9 +285,9 @@ void Shisensho::configRandomLevel(const QString& filename) {
 
     //filling in the tiles
     for(int i=0; i<cols; i++) {
-        QStringList columnData = columns.at(i).split(",");
+        const QStringList columnData = columns.at(i).split(",");
         for(int j=0; j<columnData.size(); j++) {
-            unsigned tileId = columnData.at(j).toInt();
+            const unsigned tileId = columnData.at(j).toInt();
             tiles[i][j] = (tileId == 42) ? nullptr : new Tile(tileId);
             tileIds[i][j] = tileId;
         }
@@ -310,7 +300,7 @@ void Shisensho::resetTiles() {
     //resetting tiles based on tileIds recorded earlier
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            unsigned id = tileIds[i][j];
+            const unsigned id = tileIds[i][j];
 
             //id is 42, creating empty tile
             if(id == 42) {
@@ -336,8 +326,8 @@ void Shisensho::createWinnableTiles() {
    //updating tile ids
    for(int i=0; i<cols; i++) {
        for(int j=0; j<rows; j++) {
-           Tile tile = * tiles[i][j];
-           unsigned id = tile.getId();
+           const Tile tile = * tiles[i][j];
+           const unsigned id = tile.getId();
            tileIds[i][j] = id;
        }
    }
@@ -354,7 +344,7 @@ QString Shisensho::gridStatusString() const {
         QString colString = "[";
         for(int j=0; j<rows; j++) {
             Tile* tile = tiles[i][j];
-            unsigned id = (tile == nullptr) ? 42 : tile->getId();
+            const unsigned id = (tile == nullptr) ? 42 : tile->getId();
             colString += QString::number(id);
             //adding comma if needed
             if(j+1 != rows) {
@@ -374,7 +364,7 @@ std::list<struct Space> Shisensho::getEmptySpaces() const {
     //finding empty spaces
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            struct Space space = {i,j};
+            const struct Space space = {i,j};
             //found empty space
             if(tiles[i][j] == nullptr) {
                 emptySpaces.push_back(space);
@@ -391,7 +381,7 @@ std::vector<struct Space> Shisensho::getTileSpaces() const {
     //finding tile spaces
     for(int i=0; i<cols; i++) {
         for(int j=0; j<rows; j++) {
-            struct Space space = {i, j};
+            const struct Space space = {i, j};
             //found space containing tile
             if(tiles[i][j] != nullptr) {
                 tileSpaces.push_back(space);
@@ -455,15 +445,15 @@ void Shisensho::markNotHovered(const struct Space& space) {
 }
 
 void Shisensho::markRemovableTiles() {
-    std::map<unsigned, std::vector<struct Space>> tileMap = getTileMap();
+    const std::map<unsigned, std::vector<struct Space>> tileMap = getTileMap();
 
     //searching for removable tiles
     for(auto& [id, spaces] : tileMap) {
         //comparing spaces that have matching
         for(int i=0; i<spaces.size(); i++) {
             for(int j=i+1; j<spaces.size(); j++) {
-                struct Space space1 = spaces[i];
-                struct Space space2 = spaces[j];
+                const struct Space space1 = spaces[i];
+                const struct Space space2 = spaces[j];
 
                 //tiles removable 
                 if(removableTiles(space1, space2)) {
@@ -534,20 +524,20 @@ void Shisensho::removeTile(const struct Space& space) {
 }
 
 bool Shisensho::gridContainsSpace(const struct Space& space) const {
-    int row = space.row;
-    int col = space.col;
+    const int row = space.row;
+    const int col = space.col;
     return  0 <= row && row < rows && 0 <= col && col < cols;
 }
 
-bool Shisensho::simplePath(const struct Space &space1, const struct Space &space2) const {
-    int col1 = space1.col;
-    int col2 = space2.col;
-    int row1 = space1.row;
-    int row2 = space2.row;
+bool Shisensho::simplePathConnectable(const struct Space& space1, const struct Space& space2) const {
+    const int col1 = space1.col;
+    const int col2 = space2.col;
+    const int row1 = space1.row;
+    const int row2 = space2.row;
 
     //ensuring that space1 if topmost space
     if(row1 > row2) {
-        return simplePath(space2, space1);
+        return simplePathConnectable(space2, space1);
     }
 
     //spaces share column
@@ -564,7 +554,7 @@ bool Shisensho::simplePath(const struct Space &space1, const struct Space &space
 
     //ensuring that space1 is leftmost space
     if(col1 > col2) {
-        return simplePath(space2, space1);
+        return simplePathConnectable(space2, space1);
     }
 
     //spaces on same row
@@ -586,7 +576,7 @@ bool Shisensho::connected(const std::vector<struct Space>& path) const {
 
     //checking if spaces between endpoints are vacant
     for(int i=1; i<path.size()-1; i++) {
-        struct Space space = path[i];
+        const struct Space space = path[i];
         //space contains tile, path not connected
         if(!spaceEmpty(space)) {
             return false;
@@ -595,11 +585,11 @@ bool Shisensho::connected(const std::vector<struct Space>& path) const {
 
     //checking if path segments contain no tiles
     for(int i=0; i<path.size()-1; i++) {
-        struct Space space1 = path[i];
-        struct Space space2 = path[i + 1];
+        const struct Space space1 = path[i];
+        const struct Space space2 = path[i + 1];
 
         //not a simple path, path not connected
-        if(!simplePath(space1, space2)) {
+        if(!simplePathConnectable(space1, space2)) {
             return false;
         }
     }
@@ -614,10 +604,10 @@ unsigned Shisensho::pathLength(const std::vector<struct Space>& path) const {
 
     //calculating min path length
     for(int i=0; i<path.size() - 1; i++) {
-        struct Space space1 = path[i];
-        struct Space space2 = path[i + 1];
+        const struct Space space1 = path[i];
+        const struct Space space2 = path[i + 1];
 
-        int length = abs(space1.row - space2.row) + abs(space1.col - space2.col);
+        const int length = abs(space1.row - space2.row) + abs(space1.col - space2.col);
         pathLength += length;
     }
 
@@ -625,10 +615,10 @@ unsigned Shisensho::pathLength(const std::vector<struct Space>& path) const {
 }
 
 std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const struct Space& space2) const {
-    int col1 = space1.col;
-    int col2 = space2.col;
-    int row1 = space1.row;
-    int row2 = space2.row;
+    const int col1 = space1.col;
+    const int col2 = space2.col;
+    const int row1 = space1.row;
+    const int row2 = space2.row;
 
     //ensuring first argument is higher space
     if(row1 > row2) {
@@ -644,7 +634,7 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
     //spaces share same column
     if(col1 == col2) {
         //spaces are simply connected, path found
-        if(simplePath(space1, space2)) {
+        if(simplePathConnectable(space1, space2)) {
             //qDebug() << "simple path";
             path = {space1, space2};
             return path;
@@ -652,10 +642,10 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
 
         //searching for path of form '[' or ']'
         for(int i=-1; i<=(int)cols; i++) {
-            struct Space topCorner = {i, row1};
-            struct Space bottomCorner = {i, row2};
+            const struct Space topCorner = {i, row1};
+            const struct Space bottomCorner = {i, row2};
 
-            std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
+            const std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
 
             //found a path!
             if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
@@ -668,16 +658,16 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
     //spaces share same row
     if(row1 == row2) {
         //checking if direct path between spaces
-        if(simplePath(space1, space2)) {
+        if(simplePathConnectable(space1, space2)) {
             path = {space1, space2};
             return path;
         }
 
         //looking for paths type |-| or |_|
         for(int j=-1; j<=(int)rows; j++) {
-            struct Space leftCorner = {col1, j};
-            struct Space rightCorner = {col2, j};
-            std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
+            const struct Space leftCorner = {col1, j};
+            const struct Space rightCorner = {col2, j};
+            const std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
 
             //found path
             if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
@@ -688,10 +678,10 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
     }
 
     //searching for an L-shaped path
-    struct Space corner1 = {col2, row1};
-    struct Space corner2 = {col1, row2};
-    std::vector<struct Space> lPath1 = {space1, corner1, space2};
-    std::vector<struct Space> lPath2 = {space1, corner2, space2};
+    const struct Space corner1 = {col2, row1};
+    const struct Space corner2 = {col1, row2};
+    const std::vector<struct Space> lPath1 = {space1, corner1, space2};
+    const std::vector<struct Space> lPath2 = {space1, corner2, space2};
 
     //found path
     if(connected(lPath1)) {
@@ -703,9 +693,9 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
 
     //searching for path with horizontal, vertical, then horizontal segment
     for(int i=-1; i<=(int)cols; i++) {
-        struct Space topCorner = {i, row1};
-        struct Space bottomCorner = {i, row2};
-        std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
+        const struct Space topCorner = {i, row1};
+        const struct Space bottomCorner = {i, row2};
+        const std::vector<struct Space> path2 = {space1, topCorner, bottomCorner, space2};
 
         //found new viable path
         if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
@@ -715,9 +705,9 @@ std::vector<struct Space> Shisensho::findPath(const struct Space& space1, const 
 
     //searching for a path with vertical, horizontal, then vertical segment
     for(int j=-1; j<=(int)rows; j++) {
-        struct Space leftCorner = {col1, j};
-        struct Space rightCorner = {col2, j};
-        std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
+        const struct Space leftCorner = {col1, j};
+        const struct Space rightCorner = {col2, j};
+        const std::vector<struct Space> path2 = {space1, leftCorner, rightCorner, space2};
 
         //found new viable path
         if(connected(path2) && (path.size() == 0 || pathLength(path2) < pathLength(path))) {
@@ -743,7 +733,7 @@ void Shisensho::removeSelectedTiles() {
 
     //removing each selected tile
     for(struct Space space : selectedTiles) {
-        int index = recentSpaces.size();
+        const int index = recentSpaces.size();
 
         //deleting pointer if necessary
         if(recentTiles[index] == nullptr) {
@@ -793,7 +783,7 @@ bool Shisensho::matchingTiles(const Tile& tile1, const Tile& tile2) const {
 bool Shisensho::removableTiles(const struct Space& space1, const struct Space& space2) const {
     assert(tiles[space1.col][space1.row] != nullptr && tiles[space2.col][space2.row] != nullptr);
 
-    std::vector<Space> path = findPath(space1, space2);
+    const std::vector<Space> path = findPath(space1, space2);
     Tile tile1 = *tiles[space1.col][space1.row];
     Tile tile2 = *tiles[space2.col][space2.row];
 
@@ -801,15 +791,15 @@ bool Shisensho::removableTiles(const struct Space& space1, const struct Space& s
 }
 
 bool Shisensho::hasRemovableTiles() const {
-    std::map<unsigned, std::vector<struct Space>> tileMap = getTileMap();
+    const std::map<unsigned, std::vector<struct Space>> tileMap = getTileMap();
 
     //examining tiles by suit
     for(auto& [id, spaces] : tileMap) {
         //trying to remove different pairs of tiles
         for(int a=0; a<spaces.size()-1; a++) {
             for(int b=a+1; b<spaces.size(); b++) {
-                struct Space space1 = spaces[a];
-                struct Space space2 = spaces[b];
+                const struct Space space1 = spaces[a];
+                const struct Space space2 = spaces[b];
 
                 //removable tiles
                 if(removableTiles(space1, space2)) {
@@ -864,14 +854,28 @@ void Shisensho::copy(const Shisensho& game) {
         }
     }
 
+    //copying over recent tiles
+    for(int i=0; i<game.recentTiles.size(); i++) {
+        //not nullptr
+        if(game.recentTiles[i] != nullptr) {
+            Tile tile = *(game.recentTiles[i]);
+            recentTiles[i] = new Tile(tile);
+        }
+        //nullptr
+        else {
+            recentTiles[i] = nullptr;
+        }
+    }
+
     selectedTiles = game.selectedTiles;
     tileIds = game.tileIds;
+    recentSpaces = game.recentSpaces;
 }
 
-void generateShisenshoGames(const unsigned numGames, const QString& filename, const QString& gameSize = "small") {
+void generateShisenshoGames(const unsigned& numGames, const QString& filename, const QString& gameSize = "small") {
     QSet<QString> levels;
 
-    QString filepath = QDir::currentPath() + "/" + filename;
+    const QString filepath = QDir::currentPath() + "/" + filename;
     QFile file (filepath);
 
     //checking that file opened correctly
@@ -883,7 +887,7 @@ void generateShisenshoGames(const unsigned numGames, const QString& filename, co
     //reading levels from file
     QTextStream in(&file);
     while (!in.atEnd()) {
-        QString line = in.readLine();
+        const QString line = in.readLine();
         levels.insert(line);
     }
     file.close();
@@ -924,9 +928,9 @@ void generateShisenshoGames(const unsigned numGames, const QString& filename, co
 }
 
 void writeToFile(const QString& data, const QString& filename) {
-    QString filePath = QDir::currentPath() + "/" + filename;
+    const QString filePath = QDir::currentPath() + "/" + filename;
     qDebug() << filePath;
-    QFile file(filePath);
+    QFile file (filePath);
 
     //checking that file opened correctly
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
@@ -955,10 +959,10 @@ QString selectRandomLevel(const QString& filename) {
     //reading levels from file
     QTextStream in(&file);
     while (!in.atEnd()) {
-        QString level = in.readLine();
+        const QString level = in.readLine();
         levels.append(level);
     }
 
-    int randIndex = rand() % levels.size();
+    const int randIndex = rand() % levels.size();
     return levels.at(randIndex);
 }

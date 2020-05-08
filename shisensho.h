@@ -1,31 +1,23 @@
 #ifndef SHISENSHO_H
 #define SHISENSHO_H
 
-#include <QWidget>
-#include <QObject>
-#include "mainwindow.h"
 #include "tile.h"
 #include "space.h"
-#include <iostream>
-#include <utility>
-#include <algorithm>
+#include <QObject>
 
 class Shisensho : public QObject {
     Q_OBJECT
 public:
-    //creates shisensho game widget
+    //default constructor
     Shisensho();
 
     //creates game of custom size. must contain even number of tiles
     //@param numCols - number of cols
     //@param numRows - number of rows
-    Shisensho(const unsigned numCols, const unsigned numRows);
+    Shisensho(const unsigned& numCols, const unsigned& numRows);
 
-    //creates game with a specific configuration of tiles
-    //@param levelData - a string of array in arrays, with inner arrays representing tiles by id (42 for no tile).
-    Shisensho(const QString& levelData);
-
-    //copy constructor. creates a deep copy
+    //copy constructor
+    //@param game - Shisensho game to copy
     Shisensho(const Shisensho& game);
 
     //assignment operator. creates deep copy
@@ -41,7 +33,7 @@ public:
     //checks if any tiles have been removed
     bool tilesRemoved() const;
 
-    //removes all the tiles in the grid
+    //removes all the tiles in the grid, and well as recent tile data
     void clearTiles();
 
     //creates random grid of tiles. game might not be winnable
@@ -85,7 +77,7 @@ public:
     //returns number of rows
     unsigned getRows() const;
 
-    //returns ed tiles
+    //returns list of selected tiles
     std::list<struct Space> getSelectedTiles() const;
 
     //marks a tile as hovered
@@ -127,7 +119,7 @@ public:
     //@param space1 - first space. does not need to be in grid or contain tile
     //@param space2 - second space. does not need to be in grid or contain tile.
     //returns true if connectable by horizontal or vertical line that does not cross other tiles
-    bool simplePath(const struct Space& space1, const struct Space& space2) const;
+    bool simplePathConnectable(const struct Space& space1, const struct Space& space2) const;
 
     //checks if a path does not contain any tiles other than at the endpoints
     //@param path - a sequence of at least 2 spaces
@@ -232,7 +224,7 @@ void writeToFile(const QString& data, const QString& filename);
 //@param numGames - number of games to generate
 //@param filename - name of .txt file to store data
 //@param gameSize - string of the form "small", "medium", or "large" indicating game size. "small" by default
-void generateShisenshoGames(const unsigned numGames, const QString& filename, const QString& gameSize);
+void generateShisenshoGames(const unsigned& numGames, const QString& filename, const QString& gameSize);
 
 //selects a random shisensho game from levels stored in .txt file, with one level per line
 //@param filename - name of txt file containing level data
