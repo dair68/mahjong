@@ -7,7 +7,7 @@
 class MusicPlayer : public QObject {
     Q_OBJECT
 public:
-    //creates a music player that contains music relevant to project
+    //constructor
     //@param parent - pointer to parent object
     MusicPlayer(QObject* parent = nullptr);
 
