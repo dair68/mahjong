@@ -7,7 +7,7 @@ class ShisenMenu : public QMenuBar
 {
     Q_OBJECT
 public:
-    //creates menu
+    //constructor
     //@parent - pointer to parent widget
     ShisenMenu(QWidget* parent = nullptr);
 
@@ -31,7 +31,7 @@ public slots:
     //emit when user clicks help option
     void helpSelected();
 
-    //emit whenever a "No" option is selected for any dialogs created
+    //emit whenever a "No" option is selected from any dialogs created
     void noSelected() const;
 
     //emit when user selects to restart game

@@ -7,19 +7,19 @@ ShisenMenu::ShisenMenu(QWidget* parent) : QMenuBar(parent) {
     QMenu* menu = addMenu("Menu");
 
     QAction* help = menu->addAction("Help");
-    connect(help, &QAction::triggered, this, &ShisenMenu::helpSelected);
+    connect(help, SIGNAL(triggered()), this, SIGNAL(helpSelected()));
 
     QAction* restart = menu->addAction("Restart game");
-    connect(restart, &QAction::triggered, this, &ShisenMenu::showRestartDialog);
+    connect(restart, SIGNAL(triggered()), this, SLOT(showRestartDialog()));
 
     QAction* newGame = menu->addAction("New game");
-    connect(newGame, &QAction::triggered, this, &ShisenMenu::showNewGameDialog);
+    connect(newGame, SIGNAL(triggered()), this, SLOT(showNewGameDialog()));
 
     QAction* title = menu->addAction("Return to title");
-    connect(title, &QAction::triggered, this, &ShisenMenu::showTitleDialog);
+    connect(title, SIGNAL(triggered()), this, SLOT(showTitleDialog()));
 
     QAction* quit = menu->addAction("Quit");
-    connect(quit, &QAction::triggered, this, &ShisenMenu::showQuitDialog);
+    connect(quit, SIGNAL(triggered()), this, SLOT(showQuitDialog()));
 }
 
 void ShisenMenu::showRestartDialog() const {
