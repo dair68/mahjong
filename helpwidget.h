@@ -6,9 +6,9 @@
 class HelpWidget : public QTabWidget {
     Q_OBJECT
 public:
-    //creates shisensho help dialog
+    //constructor
     //@param parent - pointer to parent widget
-    HelpWidget(QWidget* parent=nullptr);
+    HelpWidget(QWidget* parent = nullptr);
 
 private:
     //creates overview tab

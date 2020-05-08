@@ -2,20 +2,17 @@
 #include "titlescreen.h"
 #include "shisenwidget.h"
 #include "creditswidget.h"
-#include <QDebug>
-#include <QMediaPlayer>
-#include <QMediaPlaylist>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), help(), player() {
-    QString tilePath = ":/images/MJt1-.svg.png";
+    const QString tilePath = ":/images/MJt1-.svg.png";
     setWindowIcon(QIcon(tilePath));
 
-    int scale = 300;
-    int width = 4 * scale;
-    int height = 3 * scale;
+    const int scale = 300;
+    const int width = 4 * scale;
+    const int height = 3 * scale;
     setFixedSize(width, height);
 
-    connect(this, &MainWindow::enteredShisenScreen, &player, &MusicPlayer::pause);
+    connect(this, SIGNAL(enteredShisenScreen()), &player, SLOT(pause()));
     player.playTitleTheme();
     toTitle();
 }
@@ -25,24 +22,24 @@ void MainWindow::toShisensho() {
     setCentralWidget(shisen);
     emit enteredShisenScreen();
 
-    connect(shisen, &ShisenWidget::returnToTitle, this, &MainWindow::toTitle);
+    connect(shisen, SIGNAL(returnToTitle()), this, SLOT(toTitle()));
     connect(shisen, SIGNAL(returnToTitle()), &player, SLOT(playTitleTheme()));
-    connect(shisen, &ShisenWidget::showHelp, &help, &QWidget::show);
-    connect(shisen, &ShisenWidget::gameHasBegun, &player, &MusicPlayer::playGameTheme);
-    connect(shisen, &ShisenWidget::gamePaused, &player, &MusicPlayer::pause);
-    connect(shisen, &ShisenWidget::gameResumed, &player, &MusicPlayer::resume);
-    connect(shisen, &ShisenWidget::gameOver, &player, &MusicPlayer::pause);
+    connect(shisen, SIGNAL(showHelp()), &help, SLOT(show()));
+    connect(shisen, SIGNAL(gameHasBegun()), &player, SLOT(playGameTheme()));
+    connect(shisen, SIGNAL(gamePaused()), &player, SLOT(pause()));
+    connect(shisen, SIGNAL(gameResumed()), &player, SLOT(resume()));
+    connect(shisen, SIGNAL(gameOver()), &player, SLOT(pause()));
+
     shisen->startNewGame();
 }
 
 void MainWindow::toTitle() {
     TitleScreen* title = new TitleScreen(this);
     setCentralWidget(title);
-    emit enteredTitleScreen();
 
-    connect(title, &TitleScreen::playButtonClicked, this, &MainWindow::toShisensho);
-    connect(title, &TitleScreen::tutorialButtonClicked, &help, &QWidget::show);
-    connect(title, &TitleScreen::creditsButtonClicked, this, &MainWindow::toCredits);
+    connect(title, SIGNAL(playButtonClicked()), this, SLOT(toShisensho()));
+    connect(title, SIGNAL(tutorialButtonClicked()), &help, SLOT(show()));
+    connect(title, SIGNAL(creditsButtonClicked()), this, SLOT(toCredits()));
 }
 
 void MainWindow::toCredits() {
