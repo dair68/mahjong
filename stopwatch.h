@@ -11,12 +11,6 @@ public:
     //@param parent - pointer to parent widget. null pointer by default
     Stopwatch(QWidget* parent = nullptr);
 
-    //starts the stopwatch. increments time every second and displays hh:mm:ss.
-    void start();
-
-    //stops the stopwatch. current time preserved on display
-    void stop();
-
     //resets the time to 0 seconds
     void reset();
 
@@ -32,6 +26,14 @@ public:
 
     //updates the time displayed by widget. displays hh:mm:ss.
     void updateDisplay();
+
+public slots:
+    //starts the stopwatch. increments time every second and displays hh:mm:ss.
+    void start();
+
+    //stops the stopwatch. current time preserved on display
+    void stop();
+
 private:
     unsigned seconds;
     QTimer timer;

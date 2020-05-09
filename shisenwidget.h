@@ -1,24 +1,19 @@
 #ifndef SHISENWIDGET_H
 #define SHISENWIDGET_H
 
-#include <QWidget>
-#include <QLabel>
-#include <QPushButton>
-#include "mainwindow.h"
 #include "tile.h"
 #include "shisensho.h"
 #include "stopwatch.h"
 #include "shisenmenu.h"
+#include <QWidget>
+#include <QPushButton>
 
 class ShisenWidget : public QWidget {
     Q_OBJECT
 public:
-    //creates shisensho screen
+    //constructor
     //@param parent - pointer to parent widget
     ShisenWidget(QWidget* parent=nullptr);
-
-    //asks player for a game of custom size, then starts game. existing game removed.
-    void startNewGame();
 
     //shows dialog asking for game dimensions. game begins promptly after selection
     void showNewGameDialog();
@@ -31,9 +26,6 @@ public:
 
     //resets widget fields
     void reset();
-
-    //restarts current or previously played game
-    void restartGame();
 
     //paints screen based on state of the game
     void paintEvent(QPaintEvent* event) override;
@@ -64,7 +56,7 @@ public:
     //@param x - x coordinate of pixel. 0 is left side of screen.
     //@param y - y coordinate of pixel. 0 is top edge of screen.
     //returns space containing pixel. space might lie outside the grid
-    struct Space findSpace(const unsigned x, const unsigned y) const;
+    struct Space findSpace(const unsigned& x, const unsigned& y) const;
 
     //finds the point at tile center for a given space
     //@param space - some space. does not need to be in grid or contain tile
@@ -93,6 +85,12 @@ public slots:
 
     //checks if the game is over and ends things accordingly if so
     void checkGameStatus();
+
+    //restarts current or previously played game
+    void restartGame();
+
+    //asks player for a game of custom size, then starts game. existing game removed.
+    void startNewGame();
 
     //restores last 2 tiles removed, if possible
     void undoButtonHandler();
@@ -129,6 +127,9 @@ private:
     //sets initial attributes for the buttons
     void initializeButtons();
 
+    //connects all appropriate signals and slots
+    void connectWidgets();
+
     Shisensho game;
     Stopwatch timeDisplay;
     unsigned timePenalty;
@@ -138,10 +139,8 @@ private:
     struct Space hoveredSpace;
     QRect penaltyRect;
     std::vector<struct Space> path;
-    int gridX;
-    int gridY;
-    static unsigned tileWidth;
-    static unsigned tileHeight;
+    QPoint gridCorner;
+    static QSize tileDimension;
     QPushButton undoButton;
     QPushButton hintButton;
     ShisenMenu menu;

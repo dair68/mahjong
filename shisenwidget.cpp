@@ -10,29 +10,17 @@
 #include <QApplication>
 #include <QSound>
 
-unsigned ShisenWidget::tileWidth = 54;
-unsigned ShisenWidget::tileHeight= 65;
+QSize ShisenWidget::tileDimension = QSize(54, 65);
 
 ShisenWidget::ShisenWidget(QWidget* parent) : QWidget(parent), game(),
     timeDisplay(this), timePenalty(0), gameStarted(false), drawBackground(false),
     updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
-    gridX(0), gridY(0), undoButton("Undo", this), hintButton("Hint", this), menu(this) {
+    gridCorner(), undoButton("Undo", this), hintButton("Hint", this), menu(this) {
 
     initializeAttributes();
     initializeTimeDisplay();
     initializeButtons();
-
-    connect(&game, &Shisensho::gameInitialized, this, &ShisenWidget::startPainting);
-    connect(&undoButton, &QPushButton::clicked, this, &ShisenWidget::undoButtonHandler);
-    connect(&hintButton, &QPushButton::clicked, this, &ShisenWidget::markRemovableTiles);
-    connect(&menu, &ShisenMenu::modalCreated, &timeDisplay, &Stopwatch::stop);
-    connect(&menu, &ShisenMenu::noSelected, &timeDisplay, &Stopwatch::start);
-    connect(&menu, &ShisenMenu::helpSelected, this, &ShisenWidget::showHelp);
-    connect(&menu, &ShisenMenu::returnToTitleSelected, this, &ShisenWidget::returnToTitle);
-    connect(&menu, &ShisenMenu::restartSelected, this, &ShisenWidget::restartGame);
-    connect(&menu, &ShisenMenu::newGameSelected, this, &ShisenWidget::startNewGame);
-    connect(&menu, &ShisenMenu::modalCreated, this, &ShisenWidget::gamePaused);
-    connect(&menu, &ShisenMenu::noSelected, this, &ShisenWidget::gameResumed);
+    connectWidgets();
     redrawBackground();
 }
 
@@ -44,21 +32,21 @@ void ShisenWidget::startNewGame() {
 void ShisenWidget::showNewGameDialog() {
     //getting game dimensions
     bool ok;
-    QStringList options = {"Small (12x5)", "Medium (14x6)", "Large (18x8)"};
-    QString gameDim = QInputDialog::getItem(this, "Game select", "Select game dimensions:",
+    const QStringList options = {"Small (12x5)", "Medium (14x6)", "Large (18x8)"};
+    const QString gameDim = QInputDialog::getItem(this, "Game select", "Select game dimensions:",
                                                 options, 0, false, &ok);
 
     qDebug() << gameDim;
 
     //game size selected
     if (ok) {
-        QStringList optionParts = gameDim.split(' ');
-        QString size = optionParts[0].toLower();
-        QString filename = ":/levels/" + size + "_levels.txt";
+        const QStringList optionParts = gameDim.split(' ');
+        const QString size = optionParts[0].toLower();
+        const QString filename = ":/levels/" + size + "_levels.txt";
         game.configRandomLevel(filename);
 
-        gridX = (width() - tileWidth*game.getCols())/2;
-        gridY = (height() - tileHeight*game.getRows())/2;
+        gridCorner.setX((width() - tileDimension.width()*game.getCols())/2);
+        gridCorner.setY((height() - tileDimension.height()*game.getRows())/2);
         hintButton.setEnabled(true);
         emit gameHasBegun();
     }
@@ -75,8 +63,8 @@ void ShisenWidget::endGame() {
 }
 
 void ShisenWidget::showGameOverDialog() {
-    QString timeText = "Time: " + timeDisplay.getTime();
-    QString text = game.tilesLeft() ? "Game Over" : timeText + "\nCongratulations. You won!";
+    const QString timeText = "Time: " + timeDisplay.getTime();
+    const QString text = game.tilesLeft() ? "Game Over" : timeText + "\nCongratulations. You won!";
     QMessageBox gameOverBox;
     gameOverBox.setText(text);
     QPushButton* retry = nullptr;
@@ -129,7 +117,6 @@ void ShisenWidget::checkGameStatus() {
 void ShisenWidget::reset() {
     game.clearTiles();
     gameStarted = false;
-  //  drawBackground = false;
     updatedSpace = {-1, -1};
     hoveredSpace = {-1, -1};
     path.clear();
@@ -176,14 +163,14 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
 
         //adding delay before tiles removed
         drawBackground = false;
-        int milliseconds = 100;
+        const int milliseconds = 100;
         QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
     }
 
     //checking if background needs to be drawn
     if(drawBackground) {
         qDebug() << "Drawing tiles";
-        QBrush brush = QBrush(Qt::darkGreen);
+        const QBrush brush = QBrush(Qt::darkGreen);
         painter.fillRect(0, 0, width(), height(), brush);
 
         //drawing tiles if game started
@@ -192,7 +179,7 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
         }
 
         //delaying to allow painting to catch up, then checking if the game is over
-        int milliseconds = 100;
+        const int milliseconds = 100;
         QTimer::singleShot(milliseconds, this, SLOT(checkGameStatus()));
         drawBackground = false;
     }
@@ -206,22 +193,22 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
         for(int j=game.getRows()-1; j>=0; j--) {
             //space occupied by tile
             if(tiles[i][j] != nullptr) {
-                Tile tile = *tiles[i][j];
+                const Tile tile = *tiles[i][j];
                 //qDebug() << tile.getId();
 
-                int targetX = gridX + i*tileWidth;
-                int targetY = gridY + j*tileHeight;
-                QRectF target(targetX, targetY, Tile::spriteWidth(), Tile::spriteHeight());
+                const int targetX = gridCorner.x() + i*tileDimension.width();
+                const int targetY = gridCorner.y() + j*tileDimension.height();
+                const QRectF target(targetX, targetY, Tile::spriteWidth(), Tile::spriteHeight());
 
-                QString selectedPath = ":/images/selected_tiles.png";
-                QString highlightedPath = ":/images/dark_tiles.png";
-                QString normalPath = ":/images/mahjong_tiles.png";
+                const QString selectedPath = ":/images/selected_tiles.png";
+                const QString highlightedPath = ":/images/dark_tiles.png";
+                const QString normalPath = ":/images/mahjong_tiles.png";
                 //QString tilesheetPath = tile.isSelected() ? selectedPath : normalPath;
                 //qDebug() << tilesheetPath;
-                QString tilesheetPath = tile.isHighlighted() ? highlightedPath : normalPath;
+                const QString tilesheetPath = tile.isHighlighted() ? highlightedPath : normalPath;
 
-                QImage spriteSheet = QImage(tilesheetPath);
-                QRectF source(tile.getX(), tile.getY(), Tile::spriteWidth(), Tile::spriteHeight());
+                const QImage spriteSheet = QImage(tilesheetPath);
+                const QRectF source(tile.getX(), tile.getY(), Tile::spriteWidth(), Tile::spriteHeight());
 
                 painter.drawImage(target, spriteSheet, source);
             }
@@ -234,34 +221,34 @@ void ShisenWidget::drawTiles(QPainter& painter) const {
 void ShisenWidget::drawPath(QPainter& painter) const {
     assert(path.size() > 0);
 
-    QPen pen = QPen(Qt::red, 4);
+    const QPen pen = QPen(Qt::red, 4);
     painter.setPen(pen);
 
     for(int i=0; i<path.size()-1; i++) {
-        struct Space space1 = path[i];
-        struct Space space2 = path[i+1];
+        const struct Space space1 = path[i];
+        const struct Space space2 = path[i+1];
 
-        QPoint point1 = findCenterPoint(space1);
-        QPoint point2 = findCenterPoint(space2);
+        const QPoint point1 = findCenterPoint(space1);
+        const QPoint point2 = findCenterPoint(space2);
 
         painter.drawLine(point1, point2);
     }
 }
 
 void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) const {
-    int verticalShift = Tile::spriteHeight() - tileHeight;
-    int topCornerX = gridX;
-    int topCornerY = gridY + verticalShift;
+    const int verticalShift = Tile::spriteHeight() - tileDimension.height();
+    const int topCornerX = gridCorner.x();
+    const int topCornerY = gridCorner.y() + verticalShift;
 
-    int targetX = topCornerX + tileWidth * space.col;
-    int targetY = topCornerY + tileHeight * space.row;
-    QRect target = QRect(targetX, targetY, tileWidth, tileHeight);
+    const int targetX = topCornerX + tileDimension.width() * space.col;
+    const int targetY = topCornerY + tileDimension.height() * space.row;
+    const QRect target = QRect(targetX, targetY, tileDimension.width(), tileDimension.height());
 
-    std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+    const std::vector<std::vector<const Tile*>> tiles = game.getTiles();
 
     //checking if space contains a tile
     if(tiles[space.col][space.row] != nullptr) {
-        Tile tile = *tiles[space.col][space.row];
+        const Tile tile = *tiles[space.col][space.row];
         QString hoverPath;
         QString normalPath;
 
@@ -281,59 +268,59 @@ void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) cons
             normalPath = ":/images/mahjong_tiles.png";
         }
 
-        QString imagePath = tile.isHoveredOver() ? hoverPath : normalPath;
-        QImage spritesheet = QImage(imagePath);
-        QRect source = QRect(tile.getX(), tile.getY() + verticalShift, tileWidth, tileHeight);
+        const QString imagePath = tile.isHoveredOver() ? hoverPath : normalPath;
+        const QImage spritesheet = QImage(imagePath);
+        const QRect source = QRect(QPoint(tile.getX(), tile.getY() + verticalShift), tileDimension);
         painter.drawImage(target, spritesheet, source);
     }
 }
 
 void ShisenWidget::drawTimePenalty(QPainter& painter, const QRect& rect) const {
-    QString text = "+" + QString::number(timePenalty) + "s";
+    const QString text = "+" + QString::number(timePenalty) + "s";
     painter.setPen(Qt::darkMagenta);
     painter.setFont(QFont("Times", 15, QFont::Bold));
     painter.drawText(rect, Qt::AlignCenter, text);
 }
 
 bool ShisenWidget::gridContainsSpace(const struct Space &space) const {
-    int row = space.row;
-    int col = space.col;
+    const int row = space.row;
+    const int col = space.col;
     return  0 <= row && row < game.getRows() && 0 <= col && col < game.getCols();
 }
 
-struct Space ShisenWidget::findSpace(const unsigned x, const unsigned y) const {
-    int verticalShift = Tile::spriteHeight() - tileHeight;
-    int topCornerX = gridX;
-    int topCornerY = gridY + verticalShift;
+struct Space ShisenWidget::findSpace(const unsigned& x, const unsigned& y) const {
+    const int verticalShift = Tile::spriteHeight() - tileDimension.height();
+    const int topCornerX = gridCorner.x();
+    const int topCornerY = gridCorner.y() + verticalShift;
 
-    int col = floor((double)(x - topCornerX) / tileWidth);
-    int row = floor((double)(y - topCornerY) / tileHeight);
-    struct Space space = {col, row};
+    const int col = floor((double)(x - topCornerX) / tileDimension.width());
+    const int row = floor((double)(y - topCornerY) / tileDimension.height());
+    const struct Space space = {col, row};
 
     return space;
 }
 
 QPoint ShisenWidget::findCenterPoint(const struct Space& space) const {
-    QRect boundingRect = findBoundingRect(space);
-    int centerX = boundingRect.x() + tileWidth / 2;
-    int centerY = boundingRect.y() + tileHeight / 2;
+    const QRect boundingRect = findBoundingRect(space);
+    const int centerX = boundingRect.x() + tileDimension.width() / 2;
+    const int centerY = boundingRect.y() + tileDimension.height() / 2;
     return QPoint(centerX, centerY);
 }
 
 QRect ShisenWidget::findBoundingRect(const struct Space& space) const {
-    int verticalShift = Tile::spriteHeight() - tileHeight;
-    int rectX = gridX + space.col * tileWidth;
-    int rectY = gridY + space.row * tileHeight + verticalShift;
-    return QRect(rectX, rectY, tileWidth, tileHeight);
+    const int verticalShift = Tile::spriteHeight() - tileDimension.height();
+    const int rectX = gridCorner.x()+ space.col * tileDimension.width();
+    const int rectY = gridCorner.y() + space.row * tileDimension.height() + verticalShift;
+    return QRect(rectX, rectY, tileDimension.width(), tileDimension.height());
 }
 
 void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
-    int x = event->x();
-    int y = event->y();
+    const int x = event->x();
+    const int y = event->y();
 
     //game still going
     if(!game.isOver()) {
-        struct Space newHoveredSpace = findSpace(x,y);
+        const struct Space newHoveredSpace = findSpace(x,y);
 
         //mousing hovering over new tile
         if(!game.spaceEmpty(newHoveredSpace) && newHoveredSpace != hoveredSpace) {
@@ -358,15 +345,15 @@ void ShisenWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void ShisenWidget::mousePressEvent(QMouseEvent *event) {
-    int x = event->x();
-    int y = event->y();
+    const int x = event->x();
+    const int y = event->y();
 
-    struct Space clickedSpace = findSpace(x, y);
+    const struct Space clickedSpace = findSpace(x, y);
 
     //checking if tile needs to be updated
     if(!game.spaceEmpty(clickedSpace) && !game.isOver()) {
         QSound::play(":/sounds/478197__jonnyruss01__click-1.wav");
-        std::vector<std::vector<const Tile*>> tiles = game.getTiles();
+        const std::vector<std::vector<const Tile*>> tiles = game.getTiles();
         const Tile& clickedTile = *tiles[clickedSpace.col][clickedSpace.row];
 
         //deselecting a tile
@@ -383,10 +370,10 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
 
             //checking if the two selected tiles make a match
             if(game.getSelectedTiles().size() == 2) {
-                std::list<struct Space> selected = game.getSelectedTiles();
-                struct Space space1 = selected.front();
-                struct Space space2 = selected.back();
-                std::vector<struct Space> path = game.findPath(space1, space2);
+                const std::list<struct Space> selected = game.getSelectedTiles();
+                const struct Space space1 = selected.front();
+                const struct Space space2 = selected.back();
+                const std::vector<struct Space> path = game.findPath(space1, space2);
 
                 const Tile tile1 = *tiles[space1.col][space1.row];
                 const Tile tile2 = *tiles[space2.col][space2.row];
@@ -407,7 +394,7 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                     timeDisplay.increaseTime(5);
                     repaint();
                     game.deselectTiles();
-                    int milliseconds = 100;
+                    const int milliseconds = 100;
                     QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
                 }
             }
@@ -448,9 +435,9 @@ void ShisenWidget::markRemovableTiles() {
     game.markRemovableTiles();
     timePenalty = 60;
     timeDisplay.increaseTime(timePenalty);
-    penaltyRect = QRect(hintButton.x(), hintButton.y() - 60, hintButton.width(), tileHeight);
+    penaltyRect = QRect(hintButton.x(), hintButton.y() - 60, hintButton.width(), tileDimension.height());
     repaint();
-    int milliseconds = 100;
+    const int milliseconds = 100;
     QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
     hintButton.setEnabled(false);
 }
@@ -471,8 +458,8 @@ void ShisenWidget::initializeTimeDisplay() {
 }
 
 void ShisenWidget::initializeButtons() {
-    int hMargin = 10;
-    int vMargin = 60;
+    const int hMargin = 10;
+    const int vMargin = 60;
     undoButton.move(width() / 2 - undoButton.width() - hMargin, height() - vMargin);
     hintButton.move(width() / 2 + hMargin, height() - vMargin);
 
@@ -480,4 +467,18 @@ void ShisenWidget::initializeButtons() {
     hintButton.setEnabled(false);
     undoButton.setStyleSheet("font: 12pt");
     hintButton.setStyleSheet("font: 12pt");
+}
+
+void ShisenWidget::connectWidgets() {
+    connect(&game, SIGNAL(gameInitialized()), this, SLOT(startPainting()));
+    connect(&undoButton, SIGNAL(clicked()), this, SLOT(undoButtonHandler()));
+    connect(&hintButton, SIGNAL(clicked()), this, SLOT(markRemovableTiles()));
+    connect(&menu, SIGNAL(modalCreated()), &timeDisplay, SLOT(stop()));
+    connect(&menu, SIGNAL(noSelected()), &timeDisplay, SLOT(start()));
+    connect(&menu, SIGNAL(helpSelected()), this, SIGNAL(showHelp()));
+    connect(&menu, SIGNAL(returnToTitleSelected()), this, SIGNAL(returnToTitle()));
+    connect(&menu, SIGNAL(restartSelected()), this, SLOT(restartGame()));
+    connect(&menu, SIGNAL(newGameSelected()), this, SLOT(startNewGame()));
+    connect(&menu, SIGNAL(modalCreated()), this, SIGNAL(gamePaused()));
+    connect(&menu, SIGNAL(noSelected()), this, SIGNAL(gameResumed()));
 }
