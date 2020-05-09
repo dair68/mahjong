@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "titlescreen.h"
+#include "titlewidget.h"
 #include "shisenwidget.h"
 #include "creditswidget.h"
 
@@ -34,7 +34,7 @@ void MainWindow::toShisensho() {
 }
 
 void MainWindow::toTitle() {
-    TitleScreen* title = new TitleScreen(this);
+    TitleWidget* title = new TitleWidget(this);
     setCentralWidget(title);
 
     connect(title, SIGNAL(playButtonClicked()), this, SLOT(toShisensho()));

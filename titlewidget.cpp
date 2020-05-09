@@ -1,4 +1,4 @@
-#include "titlescreen.h"
+#include "titlewidget.h"
 #include "mainwindow.h"
 #include <QLabel>
 #include <QVBoxLayout>
@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <QApplication>
 
-TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
+TitleWidget::TitleWidget(QWidget* parent) : QWidget(parent) {
     QLabel* title = new QLabel("Mahjong", this);
     QFontDatabase::addApplicationFont(":/fonts/ragingredlotus-bb.regular.ttf");
 
@@ -23,19 +23,19 @@ TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
                 "QPushButton {"
                 "font-size: 22pt;"
                 "}"
-                "TitleScreen {"
+                "TitleWidget {"
                 "background-image: url(:/images/chineseclouds-01.jpg);"
                 "}"
                 );
 
     QPushButton* shisenButton = new QPushButton("Play",this);
-    connect(shisenButton, &QPushButton::clicked, this, &TitleScreen::playButtonClicked);
+    connect(shisenButton, SIGNAL(clicked()), this, SIGNAL(playButtonClicked()));
 
     QPushButton* tutorialButton = new QPushButton("How To Play", this);
-    connect(tutorialButton, &QPushButton::clicked, this, &TitleScreen::tutorialButtonClicked);
+    connect(tutorialButton, SIGNAL(clicked()), this, SIGNAL(tutorialButtonClicked()));
 
     QPushButton* creditsButton = new QPushButton("Credits", this);
-    connect(creditsButton, &QPushButton::clicked, this, &TitleScreen::creditsButtonClicked);
+    connect(creditsButton, SIGNAL(clicked()), this, SIGNAL(creditsButtonClicked()));
 
     QPushButton* quitButton = new QPushButton("Quit", this);
     connect(quitButton, SIGNAL(clicked()), this, SLOT(showQuitDialog()));
@@ -52,14 +52,14 @@ TitleScreen::TitleScreen(QWidget* parent) : QWidget(parent) {
     setLayout(layout);
 }
 
-void TitleScreen::paintEvent(QPaintEvent *event) {
+void TitleWidget::paintEvent(QPaintEvent *event) {
     QStyleOption opt;
     opt.init(this);
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
-void TitleScreen::showQuitDialog() {
+void TitleWidget::showQuitDialog() {
     QMessageBox dialog;
     dialog.setText("Are you sure you want to quit?");
     dialog.setStandardButtons(QMessageBox::Yes | QMessageBox::No);

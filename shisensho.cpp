@@ -433,7 +433,7 @@ void Shisensho::markHovered(const struct Space& space) {
     assert(tiles[space.col][space.row] != nullptr);
 
     Tile& tile = *tiles[space.col][space.row];
-    tile.markHovered();
+    tile.setHovered(true);
 }
 
 void Shisensho::markNotHovered(const struct Space& space) {
@@ -441,7 +441,7 @@ void Shisensho::markNotHovered(const struct Space& space) {
     assert(tiles[space.col][space.row] != nullptr);
 
     Tile& tile = *tiles[space.col][space.row];
-    tile.markNotHovered();
+    tile.setHovered(false);
 }
 
 void Shisensho::markRemovableTiles() {
@@ -486,7 +486,7 @@ void Shisensho::selectTile(const struct Space& space) {
     //checking if less than 2 tiles selected
     if(selectedTiles.size() < 2) {
         Tile& tile = *tiles[space.col][space.row];
-        tile.select();
+        tile.setSelected(true);
         selectedTiles.push_back(space);
     }
 }
@@ -496,7 +496,7 @@ void Shisensho::deselectTile(const struct Space& space) {
     assert(tiles[space.col][space.row] != nullptr);
 
     Tile& tile = *tiles[space.col][space.row];
-    tile.deselect();
+    tile.setSelected(false);
 
     auto iter = find(selectedTiles.begin(), selectedTiles.end(), space);
 
@@ -722,7 +722,7 @@ void Shisensho::deselectTiles() {
     //deselecting each selected tile
     for(struct Space space : selectedTiles) {
         Tile& tile = *tiles[space.col][space.row];
-        tile.deselect();
+        tile.setSelected(false);
     }
     selectedTiles.clear();
 }

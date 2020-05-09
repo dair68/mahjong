@@ -10,7 +10,7 @@ Tile::Tile() : id(0), suit("dragon"), number(1), faceup(true), selected(false),
 
 }
 
-Tile::Tile(const unsigned id) : faceup(true), selected(false), hovered(false),
+Tile::Tile(const unsigned& id) : faceup(true), selected(false), hovered(false),
 highlighted(false) {
     assert(0 <= id && id < 42);
     this->id = id;
@@ -78,27 +78,19 @@ void Tile::toggleSelection() {
     selected = selected ? false : true;
 }
 
-void Tile::select() {
-    selected = true;
-}
-
-void Tile::deselect() {
-    selected = false;
+void Tile::setSelected(const bool& selectStatus) {
+    selected = selectStatus;
 }
 
 bool Tile::isHoveredOver() const {
     return hovered;
 }
 
-void Tile::markHovered() {
-    hovered = true;
+void Tile::setHovered(const bool& hoverStatus) {
+    hovered = hoverStatus;
 }
 
-void Tile::markNotHovered() {
-    hovered = false;
-}
-
-void Tile::setHighlight(const bool highlightStatus) {
+void Tile::setHighlight(const bool& highlightStatus) {
     highlighted = highlightStatus;
 }
 

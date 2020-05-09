@@ -3,7 +3,7 @@
 #include <QPainter>
 
 Stopwatch::Stopwatch(QWidget* parent) : QLabel(parent), seconds(0), timer(this) {
-    connect(&timer, &QTimer::timeout, this, &Stopwatch::incrementTime);
+    connect(&timer, SIGNAL(timeout()), this, SLOT(incrementTime()));
     updateDisplay();
 }
 
@@ -26,7 +26,7 @@ void Stopwatch::incrementTime() {
     updateDisplay();
 }
 
-void Stopwatch::increaseTime(const unsigned sec) {
+void Stopwatch::increaseTime(const unsigned& sec) {
     seconds += sec;
     updateDisplay();
 }
@@ -44,6 +44,6 @@ QString Stopwatch::getTime() const {
 }
 
 void Stopwatch::updateDisplay() {
-    QString time = getTime();
+    const QString time = getTime();
     setText("Time\n" + time);
 }

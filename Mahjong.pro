@@ -29,7 +29,7 @@ SOURCES += \
     space.cpp \
     stopwatch.cpp \
     tile.cpp \
-    titlescreen.cpp
+    titlewidget.cpp
 
 HEADERS += \
     creditswidget.h \
@@ -42,7 +42,7 @@ HEADERS += \
     space.h \
     stopwatch.h \
     tile.h \
-    titlescreen.h
+    titlewidget.h
 
 FORMS +=
 

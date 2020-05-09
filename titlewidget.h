@@ -1,15 +1,15 @@
-#ifndef TITLESCREEN_H
-#define TITLESCREEN_H
+#ifndef TITLEWIDGET_H
+#define TITLEWIDGET_H
 
 #include <QWidget>
 
-class TitleScreen : public QWidget
+class TitleWidget : public QWidget
 {
     Q_OBJECT
 public:
-    //creates title screen
+    //constructor
     //@param parent - pointer to parent widget
-    TitleScreen(QWidget* parent=nullptr);
+    TitleWidget(QWidget* parent = nullptr);
 
     //overriding paint event for stylesheet purposes
     void paintEvent(QPaintEvent *event) override;

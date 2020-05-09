@@ -5,6 +5,7 @@ MusicPlayer::MusicPlayer(QObject* parent) : QObject(parent), player(), playlist(
 }
 
 void MusicPlayer::playTitleTheme() {
+    player.setMedia(QMediaContent());
     const QString songPath = "qrc:/songs/David_Szesztay_-_Sweet_Water.mp3";
     player.setMedia(QUrl(songPath));
     player.setVolume(50);

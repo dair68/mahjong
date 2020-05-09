@@ -2,7 +2,9 @@
 #define TILE_H
 
 #include <string>
-#include <QPainter>
+#include <vector>
+#include <list>
+#include <cassert>
 
 class Tile {
 public:  
@@ -11,7 +13,7 @@ public:
 
     //creates a tile with a certain id
     //@param id - id number of tile. number from 0-42. tiles numbered left to right, top to bottom on tilesheet
-    Tile(const unsigned id);
+    Tile(const unsigned& id);
 
     //gets tile id
     unsigned getId() const;
@@ -34,24 +36,20 @@ public:
     //selects tile if not already selected, deselects otherwise
     void toggleSelection();
 
-    //selects tile
-    void select();
-
-    //deselects tile
-    void deselect();
+    //marks tile as selected or not selected
+    //@param selectStatus - boolean indicating whether tile is selected
+    void setSelected(const bool& selectStatus);
 
     //checks if tile is hovered over
     bool isHoveredOver() const;
 
-    //marks tile as hovered
-    void markHovered();
-
-    //marks tile as not hovered
-    void markNotHovered();
+    //marks tile as hovered or not hovered
+    //@param hoverStatus - boolean indicating whether tile is hovered over
+    void setHovered(const bool& hoverStatus);
 
     //marks tile as highlighted or not highlighted
     //@param hightlightStatus - a boolean indicating whether tile currently removable
-    void setHighlight(const bool highlightStatus);
+    void setHighlight(const bool& highlightStatus);
 
     //obtains width of tile on spritesheet
     static unsigned spriteWidth();
@@ -92,7 +90,7 @@ template<typename T>
 T randomElement(const std::vector<T>& vect) {
     assert(vect.size() > 0);
 
-    unsigned randIndex = rand() % vect.size();
+    const unsigned randIndex = rand() % vect.size();
     return vect[randIndex];
  }
 
@@ -103,7 +101,7 @@ template <typename T>
 typename std::list<T>::iterator randomElement(std::list<T>& list) {
     assert(list.size() > 0);
 
-    unsigned randShift = rand() % list.size();
+    const unsigned randShift = rand() % list.size();
     typename std::list<T>::iterator iter = list.begin();
 
     //shifting iterator to random element

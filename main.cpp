@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "shisenwidget.h"
 #include "helpwidget.h"
-#include "titlescreen.h"
+#include "titlewidget.h"
 #include <QApplication>
 #include <QFile>
 #include <QDir>
