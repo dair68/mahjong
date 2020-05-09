@@ -74,7 +74,7 @@ QLabel* CreditsWidget::createImageCredits() {
 QLabel* CreditsWidget::createMusicCredits() {
     QLabel* musicCredits = new QLabel(this);
     musicCredits->setText("<h2>Songs</h2>"
-                          "<p>\"<a href=\"https://freemusicarchive.org/music/David_Szesztay/20170730112627440/Sweet_Water\" style=\"color: yellow;\">"
+                          "<p>\"<a href=\"https://open.audio/library/tracks/9341/\" style=\"color: yellow;\">"
                           "Sweet Water</a>\" by David Szesztay</p>"
                           "<p>\"<a href=\"https://freemusicarchive.org/music/Podington_Bear/Curious/Frogs\" style=\"color: yellow;\">"
                           "Frogs</a>\" by Podington Bear</p>"
