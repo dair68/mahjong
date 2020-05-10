@@ -77,11 +77,11 @@ void Shisensho::clearTiles() {
 
 void Shisensho::clearRecentTiles() {
     //clearing recent tiles
-    for(Tile* tile : recentTiles) {
+    for(int i=0; i<recentTiles.size(); i++) {
         //tile to be deleted
-        if(tile != nullptr) {
-            delete tile;
-            tile = nullptr;
+        if(recentTiles[i] != nullptr) {
+            delete recentTiles[i];
+            recentTiles[i] = nullptr;
         }
     }
 }
@@ -852,7 +852,7 @@ void Shisensho::copy(const Shisensho& game) {
     for(int i=0; i<game.recentTiles.size(); i++) {
         //not nullptr
         if(game.recentTiles[i] != nullptr) {
-            Tile tile = *(game.recentTiles[i]);
+            Tile tile = *game.recentTiles[i];
             recentTiles[i] = new Tile(tile);
         }
         //nullptr
