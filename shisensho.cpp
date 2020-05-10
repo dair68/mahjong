@@ -6,14 +6,14 @@
 #include <cassert>
 #include <QDebug>
 
-Shisensho::Shisensho() : cols(12), rows(5), selectedTiles(), recentSpaces(),
+Shisensho::Shisensho() : cols(12), rows(5), selectedTiles(), recentSpaces(2),
     recentTiles(2, nullptr) {
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows, nullptr));
     tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
 Shisensho::Shisensho(const unsigned& numCols, const unsigned& numRows) :
-    selectedTiles(), recentTiles(), recentSpaces() {
+    selectedTiles(), recentTiles(2, nullptr), recentSpaces(2) {
     assert((cols * rows) % 2 == 0);
 
     cols = numCols;
@@ -72,6 +72,10 @@ void Shisensho::clearTiles() {
         }
     }
 
+    clearRecentTiles();
+}
+
+void Shisensho::clearRecentTiles() {
     //clearing recent tiles
     for(Tile* tile : recentTiles) {
         //tile to be deleted
@@ -730,36 +734,26 @@ void Shisensho::deselectTiles() {
 void Shisensho::removeSelectedTiles() {
     assert(selectedTiles.size() == 2);
     recentSpaces.clear();
+    clearRecentTiles();
+    recentTiles.clear();
 
     //removing each selected tile
     for(struct Space space : selectedTiles) {
-        const int index = recentSpaces.size();
-
-        //deleting pointer if necessary
-        if(recentTiles[index] == nullptr) {
-            delete recentTiles[index];
-            recentTiles[index] = nullptr;
-        }
-
-        recentTiles[index] = tiles[space.col][space.row];
+        recentTiles.push_back(tiles[space.col][space.row]);
         recentSpaces.push_back(space);
         deselectTile(space);
         tiles[space.col][space.row] = nullptr;
     }
-
 }
 
 void Shisensho::undoLastMove() {
     assert(recentSpaces.size() == 2 && recentTiles.size() == 2);
-    int index = 0;
 
-    for(struct Space space : recentSpaces) {
-        tiles[space.col][space.row] = recentTiles[index];
-        recentTiles[index] = nullptr;
-        index++;
+    for(int i=0; i<recentSpaces.size(); i++) {
+        const struct Space space = recentSpaces[i];
+        tiles[space.col][space.row] = recentTiles[i];
+        recentTiles[i] = nullptr;
     }
-
-    recentSpaces.clear();
 }
 
 

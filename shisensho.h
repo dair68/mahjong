@@ -36,6 +36,9 @@ public:
     //removes all the tiles in the grid, and well as recent tile data
     void clearTiles();
 
+    //frees up memory for recently removed tiles. does not change vector size.
+    void clearRecentTiles();
+
     //creates random grid of tiles. game might not be winnable
     void createTiles();
 
@@ -181,7 +184,7 @@ private:
     std::vector<std::vector<Tile*>> tiles;
     std::vector<std::vector<unsigned>> tileIds;
     std::list<struct Space> selectedTiles;
-    std::list<struct Space> recentSpaces;
+    std::vector<struct Space> recentSpaces;
     std::vector<Tile*> recentTiles;
 };
 
