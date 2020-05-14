@@ -98,6 +98,9 @@ public slots:
     //highlights the currently removable tiles and incurs 1 minute time penalty
     void markRemovableTiles();
 
+    //clears current path stored
+    void clearPath();
+
 signals:
     //emit when ready to return to title screen
     void returnToTitle();
@@ -116,6 +119,9 @@ signals:
 
     //emit when game has ended
     void gameOver();
+
+    //emit when widget has finished drawing path
+    void pathDrawn() const;
 
 private:
     //sets initial attributes for the widget.

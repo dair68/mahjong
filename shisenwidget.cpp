@@ -159,7 +159,6 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
     if(path.size() > 0) {
         qDebug() << "drawing path";
         drawPath(painter);
-        path.clear();
 
         //adding delay before tiles removed
         drawBackground = false;
@@ -233,6 +232,7 @@ void ShisenWidget::drawPath(QPainter& painter) const {
 
         painter.drawLine(point1, point2);
     }
+    emit pathDrawn();
 }
 
 void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) const {
@@ -442,6 +442,10 @@ void ShisenWidget::markRemovableTiles() {
     hintButton.setEnabled(false);
 }
 
+void ShisenWidget::clearPath() {
+    path.clear();
+}
+
 void ShisenWidget::initializeAttributes() {
     //preventing window erasing to improving painting
     setAttribute(Qt::WA_StaticContents);
@@ -473,6 +477,7 @@ void ShisenWidget::connectWidgets() {
     connect(&game, SIGNAL(gameInitialized()), this, SLOT(startPainting()));
     connect(&undoButton, SIGNAL(clicked()), this, SLOT(undoButtonHandler()));
     connect(&hintButton, SIGNAL(clicked()), this, SLOT(markRemovableTiles()));
+    connect(this, SIGNAL(pathDrawn()), this, SLOT(clearPath()));
     connect(&menu, SIGNAL(modalCreated()), &timeDisplay, SLOT(stop()));
     connect(&menu, SIGNAL(noSelected()), &timeDisplay, SLOT(start()));
     connect(&menu, SIGNAL(helpSelected()), this, SIGNAL(showHelp()));

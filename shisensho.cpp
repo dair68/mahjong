@@ -733,6 +733,7 @@ void Shisensho::deselectTiles() {
 
 void Shisensho::removeSelectedTiles() {
     assert(selectedTiles.size() == 2);
+
     recentSpaces.clear();
     clearRecentTiles();
     recentTiles.clear();
