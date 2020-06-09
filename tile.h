@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <cassert>
+#include <QPoint>
 
 class Tile {
 public:  

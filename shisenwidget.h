@@ -38,6 +38,15 @@ public:
     //@param painter - a QPainter object pointing to this widget
     void drawPath(QPainter& painter) const;
 
+    //erases the path from the widget. does not restore tiles erased in process.
+    //@param painter - a QPainter object pointing to this widget
+    void erasePath(QPainter& painter) const;
+
+    //repaints a space and it's 8 surrounding spaces
+    //@param painter - a painter pointing to this widget
+    //@param space - space of interest
+    void redrawSpaceArea(QPainter& painter, const struct Space& space) const;
+
     //redraws a single space in grid. will draw penalty over space if necessary.
     //@param painter - a QPainter object pointing to this widget
     //@param space - space containing tile to be redrawn
@@ -80,6 +89,9 @@ public slots:
     //sets drawBackground to true
     void redrawBackground();
 
+    //erases pair of tiles and removes any paths
+    void eraseTiles();
+
     //starts the paint events and ticking of time display
     void startPainting();
 
@@ -101,6 +113,9 @@ public slots:
     //clears current path stored
     void clearPath();
 
+    //clears widget's undo spaces
+    void clearUndoSpaces();
+
 signals:
     //emit when ready to return to title screen
     void returnToTitle();
@@ -120,8 +135,14 @@ signals:
     //emit when game has ended
     void gameOver();
 
-    //emit when widget has finished drawing path
-    void pathDrawn() const;
+    //emit when path can be safely erased
+    void pathErasable() const;
+
+    //emit when deleted tiles finished drawing
+    void deletedTilesDrawn();
+
+    //emit when undo button restores tiles
+    void tilesRestored();
 
 private:
     //sets initial attributes for the widget.
@@ -141,10 +162,12 @@ private:
     unsigned timePenalty;
     bool gameStarted;
     bool drawBackground;
+    bool tilesDeleted;
     struct Space updatedSpace;
     struct Space hoveredSpace;
     QRect penaltyRect;
     std::vector<struct Space> path;
+    std::vector<struct Space> undoSpaces;
     QPoint gridCorner;
     static QSize tileDimension;
     QPushButton undoButton;

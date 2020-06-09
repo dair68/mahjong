@@ -6,15 +6,15 @@
 #include <cassert>
 #include <QDebug>
 
-Shisensho::Shisensho() : cols(12), rows(5), selectedTiles(), recentSpaces(2),
+Shisensho::Shisensho() : cols(12), rows(5), selectedTiles(), recentSpaces(),
     recentTiles(2, nullptr) {
     tiles = std::vector<std::vector<Tile*>>(cols, std::vector<Tile*>(rows, nullptr));
     tileIds = std::vector<std::vector<unsigned>>(cols, std::vector<unsigned>(rows, 42));
 }
 
 Shisensho::Shisensho(const unsigned& numCols, const unsigned& numRows) :
-    selectedTiles(), recentTiles(2, nullptr), recentSpaces(2) {
-    assert((cols * rows) % 2 == 0);
+    selectedTiles(), recentSpaces(), recentTiles(2, nullptr) {
+    assert((numCols * numRows) % 2 == 0);
 
     cols = numCols;
     rows = numRows;
@@ -510,6 +510,15 @@ void Shisensho::deselectTile(const struct Space& space) {
     }
 }
 
+std::vector<struct Space> Shisensho::getRecentSpaces() const {
+    return recentSpaces;
+}
+
+void Shisensho::clearRecentSpaces() {
+    recentSpaces.clear();
+}
+
+
 bool Shisensho::spaceEmpty(const struct Space& space) const {
     //space not in grid
     if(!gridContainsSpace(space)) {
@@ -734,9 +743,9 @@ void Shisensho::deselectTiles() {
 void Shisensho::removeSelectedTiles() {
     assert(selectedTiles.size() == 2);
 
-    recentSpaces.clear();
     clearRecentTiles();
     recentTiles.clear();
+    recentSpaces.clear();
 
     //removing each selected tile
     for(struct Space space : selectedTiles) {

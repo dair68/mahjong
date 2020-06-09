@@ -105,6 +105,10 @@ public:
     //@param tile - pointer to a tile in grid
     void deselectTile(const struct Space& space);
 
+    //returns the 2 spaces with the most recent tile matching activity
+    //returns empty vector at start of game
+    std::vector<struct Space> getRecentSpaces() const;
+
     //checks if a space in the grid does NOT contain a tile
     //@param space - space in the grid
     //returns true if space not in grid or does not contain tile. false otherwise
@@ -113,6 +117,10 @@ public:
     //removes tile from grid
     //@param space - space containing tile to delete
     void removeTile(const struct Space& space);
+
+    //returns vector of the 2 spaces with tiles most recently removed.
+    //if no tiles removed, returns spaces as {-1, -1}
+
 
     //checks if a given space exists in tile grid numbered from 0
     //@param space - some space with a column and row
@@ -169,6 +177,10 @@ public:
 
     //checks if there are any tiles left in grid
     bool tilesLeft() const;
+
+public slots:
+    //clears recent spaces stored in game
+    void clearRecentSpaces();
 
 signals:
     //emit when the object has initialized all the tiles

@@ -14,8 +14,8 @@ QSize ShisenWidget::tileDimension = QSize(54, 65);
 
 ShisenWidget::ShisenWidget(QWidget* parent) : QWidget(parent), game(),
     timeDisplay(this), timePenalty(0), gameStarted(false), drawBackground(false),
-    updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
-    gridCorner(), undoButton("Undo", this), hintButton("Hint", this), menu(this) {
+    tilesDeleted(false), updatedSpace({-1, -1}), hoveredSpace({-1, -1}), penaltyRect(), path(),
+    undoSpaces(), gridCorner(), undoButton("Undo", this), hintButton("Hint", this), menu(this) {
 
     initializeAttributes();
     initializeTimeDisplay();
@@ -163,7 +163,31 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
         //adding delay before tiles removed
         drawBackground = false;
         const int milliseconds = 100;
-        QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
+       QTimer::singleShot(milliseconds, this, SLOT(eraseTiles()));
+    }
+
+    //checking if a pair of tiles has been removed
+    if(tilesDeleted) {
+        //path to remove
+        if(path.size() > 0) {
+            erasePath(painter);
+        }
+        std::vector<struct Space> recentSpaces = game.getRecentSpaces();
+
+        //redrawing each space
+        for(struct Space space : recentSpaces) {
+            redrawSpaceArea(painter, space);
+        }
+        tilesDeleted = false;
+        emit deletedTilesDrawn();
+    }
+
+    //pair of tiles restored through undo
+    if(undoSpaces.size() > 0) {
+        for(struct Space space : undoSpaces) {
+            redrawSpaceArea(painter, space);
+        }
+        emit tilesRestored();
     }
 
     //checking if background needs to be drawn
@@ -223,6 +247,7 @@ void ShisenWidget::drawPath(QPainter& painter) const {
     const QPen pen = QPen(Qt::red, 4);
     painter.setPen(pen);
 
+    //drawing each path segment
     for(int i=0; i<path.size()-1; i++) {
         const struct Space space1 = path[i];
         const struct Space space2 = path[i+1];
@@ -232,7 +257,99 @@ void ShisenWidget::drawPath(QPainter& painter) const {
 
         painter.drawLine(point1, point2);
     }
-    emit pathDrawn();
+}
+
+void ShisenWidget::erasePath(QPainter& painter) const {
+    assert(path.size() > 0);
+
+    //erasing each path segment
+    for(int i=0; i<path.size()-1; i++) {
+        const struct Space space1 = path[i];
+        const struct Space space2 = path[i+1];
+
+        const QPoint point1 = findCenterPoint(space1);
+        const QPoint point2 = findCenterPoint(space2);
+
+        int left;
+        int top;
+        int width;
+        int height;
+
+        //points vertically connected
+        if(point1.x() == point2.x()) {
+            left = point1.x() - 5;
+            top = std::min(point1.y() - 5, point2.y() - 5);
+            width = 10;
+            height = std::abs(point1.y() - point2.y()) + 10;
+        }
+        //points horizontally connected
+        else {
+            left = std::min(point1.x() - 5, point2.x() - 5);
+            top = point1.y() - 5;
+            width = std::abs(point1.x() - point2.x()) + 10;
+            height = 10;
+        }
+
+        painter.fillRect(QRect(left, top, width, height), QBrush(Qt::darkGreen));
+    }
+    emit pathErasable();
+}
+
+void ShisenWidget::redrawSpaceArea(QPainter& painter, const struct Space& space) const {
+    const QBrush brush = QBrush(Qt::darkGreen);
+    const QRect rect = findBoundingRect(space);
+    const int tileWidth = tileDimension.width();
+    const int tileHeight = tileDimension.height();
+    const int paddingH = tileWidth / 2;
+    const int paddingV = tileHeight / 2;
+    painter.fillRect(rect.x() - paddingH, rect.y() - paddingV, 2*tileWidth, 2*tileHeight, brush);
+
+    //drawing tiles in spaces
+    for(int i=1; i >= -1; i--) {
+        for(int j=-1; j <= 1; j++) {
+            const struct Space paintedSpace = {space.col + j, space.row + i};
+            const Tile* tile = nullptr;
+
+            //space within tile grid
+            if(game.gridContainsSpace(paintedSpace)) {
+                tile = game.getTiles()[paintedSpace.col][paintedSpace.row];
+            }
+
+            //tile at location
+            if(tile != nullptr) {
+                const QRect paintedRect = findBoundingRect(paintedSpace);
+                const int leftEdge = paintedRect.x();
+                int topEdge;
+                const int targetWidth = (j == 1) ? tileWidth : Tile::spriteWidth();
+                int targetHeight;
+
+                //topmost tiles only drawn as high as tile face
+                if(i == -1) {
+                    topEdge = paintedRect.y();
+                    targetHeight = tileHeight;
+                }
+                else {
+                    topEdge = paintedRect.y() - Tile::spriteHeight() + tileHeight;
+                    targetHeight = Tile::spriteHeight();
+                }
+
+                const QRect targetRect (leftEdge, topEdge, targetWidth, targetHeight);
+                const QString imagePath = ":/images/mahjong_tiles.png";
+                QRect sourceRect;
+
+                //only tile face redrawn
+                if(i == -1) {
+                    const int y = tile->getY() + Tile::spriteHeight() - tileHeight;
+                    sourceRect = QRect(tile->getX(), y, targetWidth, targetHeight);
+                }
+                else {
+                    sourceRect = QRect(tile->getX(), tile->getY(), targetWidth, targetHeight);
+                }
+
+                painter.drawImage(targetRect, QImage(imagePath), sourceRect);
+            }
+        }
+    }
 }
 
 void ShisenWidget::redrawTile(QPainter& painter, const struct Space& space) const {
@@ -385,7 +502,8 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                     game.removeSelectedTiles();
                     undoButton.setEnabled(true);
                     hintButton.setEnabled(true);
-                    redrawBackground();
+                    repaint();
+                    //redrawBackground();
                 }
                 //not a match
                 else {
@@ -416,6 +534,11 @@ void ShisenWidget::redrawBackground() {
     update();
 }
 
+void ShisenWidget::eraseTiles() {
+    tilesDeleted = true;
+    repaint();
+}
+
 void ShisenWidget::startPainting() {
     qDebug() << "finished making tiles";
     gameStarted = true;
@@ -425,9 +548,10 @@ void ShisenWidget::startPainting() {
 }
 
 void ShisenWidget::undoButtonHandler() {
+    undoSpaces = game.getRecentSpaces();
     game.undoLastMove();
     undoButton.setEnabled(false);
-    redrawBackground();
+    repaint();
 }
 
 void ShisenWidget::markRemovableTiles() {
@@ -444,6 +568,10 @@ void ShisenWidget::markRemovableTiles() {
 
 void ShisenWidget::clearPath() {
     path.clear();
+}
+
+void ShisenWidget::clearUndoSpaces() {
+    undoSpaces.clear();
 }
 
 void ShisenWidget::initializeAttributes() {
@@ -477,7 +605,9 @@ void ShisenWidget::connectWidgets() {
     connect(&game, SIGNAL(gameInitialized()), this, SLOT(startPainting()));
     connect(&undoButton, SIGNAL(clicked()), this, SLOT(undoButtonHandler()));
     connect(&hintButton, SIGNAL(clicked()), this, SLOT(markRemovableTiles()));
-    connect(this, SIGNAL(pathDrawn()), this, SLOT(clearPath()));
+    connect(this, SIGNAL(pathErasable()), this, SLOT(clearPath()));
+    //connect(this, SIGNAL(deletedTilesDrawn()), &game, SLOT(clearRecentSpaces()));
+    connect(this, SIGNAL(tilesRestored()), this, SLOT(clearUndoSpaces()));
     connect(&menu, SIGNAL(modalCreated()), &timeDisplay, SLOT(stop()));
     connect(&menu, SIGNAL(noSelected()), &timeDisplay, SLOT(start()));
     connect(&menu, SIGNAL(helpSelected()), this, SIGNAL(showHelp()));
