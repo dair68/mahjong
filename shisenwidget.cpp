@@ -161,9 +161,8 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
         drawPath(painter);
 
         //adding delay before tiles removed
-        drawBackground = false;
         const int milliseconds = 100;
-       QTimer::singleShot(milliseconds, this, SLOT(eraseTiles()));
+        QTimer::singleShot(milliseconds, this, SLOT(eraseTiles()));
     }
 
     //checking if a pair of tiles has been removed
@@ -198,7 +197,7 @@ void ShisenWidget::paintEvent(QPaintEvent *event) {
 
         //drawing tiles if game started
         if(gameStarted) {
-             drawTiles(painter);
+            drawTiles(painter);
         }
 
         //delaying to allow painting to catch up, then checking if the game is over
@@ -498,11 +497,23 @@ void ShisenWidget::mousePressEvent(QMouseEvent *event) {
                 //found match
                 if(game.matchingTiles(tile1, tile2) && path.size() > 0) {
                     this->path = path;
-                    game.unhighlightTiles();
                     game.removeSelectedTiles();
                     undoButton.setEnabled(true);
-                    hintButton.setEnabled(true);
-                    repaint();
+
+                    //tiles matched with hint; setting tiles back to normal
+                    if(!hintButton.isEnabled()) {
+                        qDebug() << "unhighligting tiles";
+                        game.unhighlightTiles();
+                        hintButton.setEnabled(true);
+                        repaint();
+
+                        const int milliseconds = 10;
+                        QTimer::singleShot(milliseconds, this, SLOT(redrawBackground()));
+                        //redrawBackground();
+                    }
+                    else {
+                        repaint();
+                    }
                     //redrawBackground();
                 }
                 //not a match
