@@ -4,4 +4,5 @@ This application features a single player version of Mahjong called Shisensho. I
 
 This application was developed in and confirmed to run in Windows 10. Download it [here](https://github.com/dair68/mahjong/releases).
 
+![cropped_title](https://user-images.githubusercontent.com/36572214/84952736-4f055d00-b0a7-11ea-8ae8-cf6945420886.png)
 ![screenshot_1](https://user-images.githubusercontent.com/36572214/84951927-0305e880-b0a6-11ea-98fe-bc68432b0fd6.png)
